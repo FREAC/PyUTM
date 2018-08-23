@@ -1,16 +1,10 @@
+import csv
+import pyproj
+import shapefile
+
 import fiona
 import shapely
-import pyproj
-
 from osgeo import ogr
-import shapefile as pyshp
-
-
-def get_lonlat(epsg, easting, northing):
-
-    p = pyproj.Proj(init='epsg:{}'.format(epsg))
-
-    return p(easting, northing, inverse=True)
 
 
 class Point:
@@ -184,18 +178,165 @@ class Point:
             return None
 
 
+class Grid:
+
+    def __init__(self, data, col1=None, col2=None, epsg=4326):
+
+        self.data = data
+        self.col1 = col1
+        self.col2 = col2
+        self.epsg = epsg
+        self.xs = None
+        self.ys = None
+
+        self.set_coords()
+        if self.epsg != 4326 and (self.xs and self.ys):
+            self.transform_coords()
+
+        print(self.xs)
+        print(self.ys)
+
+    def set_coords(self):
+
+        if isinstance(self.data, (tuple, list)) and (len(self.data) > 1):
+            self.get_coords_from_list()
+        else:
+            try:
+                if self.data.endswith('.csv'):
+                    self.get_coords_from_csv()
+                elif self.data.endswith('.shp'):
+                    self.get_coords_from_shapefile()
+                else:
+                    raise AttributeError
+            except AttributeError:
+                self.error('Invalid parameters: Grid(data={}, col1={}, col2={}, epsg={})'.format(
+                    repr(self.data), self.col1, self.col2, self.epsg))
+
+    def get_coords_from_list(self):
+
+        coords = ()
+        try:
+            # Grab the column containing coordinates if applicable
+            if self.col1 is not None:
+                coords = tuple(zip(*self.data))[self.col1]
+            else:
+                if not isinstance(self.data[0], (tuple, list)) and not isinstance(self.data[1], (tuple, list)):
+                    coords = [(self.data[0], self.data[1])]
+                else:
+                    coords = self.data
+            self.xs = tuple(coord[0] for coord in coords)
+            self.ys = tuple(coord[1] for coord in coords)
+        except (TypeError, IndexError):
+            self.error('Invalid coordinates: {}'.format(coords))
+
+    def get_coords_from_csv(self):
+
+        try:
+            with open(self.data) as csvfile:
+                reader = csv.DictReader(csvfile)
+                data = tuple(zip(*((float(row[self.col1]), float(row[self.col2])) for row in reader)))
+                self.xs = data[0]
+                self.ys = data[1]
+        except (FileNotFoundError, KeyError, csv.Error) as e:
+            if type(e).__name__ == 'KeyError':
+                self.error('Invalid column names: col1={}, col2={}'.format(self.col1, self.col2))
+            else:
+                self.error(e)
+
+    def get_coords_from_shapefile(self):
+
+        try:
+            sf = shapefile.Reader(self.data)
+            shapes = sf.shapes()
+            # Only accept Point, PointZ and PointM geometries
+            if shapes[0].shapeType in (1, 11, 21):
+                self.xs = tuple(shape.points[0][0] for shape in shapes)
+                self.ys = tuple(shape.points[0][1] for shape in shapes)
+        except shapefile.ShapefileException as e:
+            self.error(e)
+
+    def transform_coords(self):
+
+        try:
+            p = pyproj.Proj(init='epsg:{}'.format(self.epsg))
+            self.xs, self.ys = p(self.xs, self.ys, inverse=True)
+        except RuntimeError:
+            self.error('EPSG:{} not found'.format(self.epsg))
+
+    def error(self, message):
+
+        preamble = 'Error creating Grid object:'
+        self.xs = None
+        self.ys = None
+        print('{} {}'.format(preamble, message))
+
+
 if __name__ == "__main__":
 
-    shp = pyshp.Reader('points.shp')
-    for shape in shp.shapes():
-        lon = shape.points[0][0]
-        lat = shape.points[0][1]
+    pass
+    # lat = 25.49225455501417
+    # lon = -80.62948251805712
+    # c = Point(lon, lat)
+    # print(c.grid_reference())
 
-        c = Point(lon, lat)
-        ref = c.grid_reference()
-        print(ref)
+lonlats = [(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477),
+           (-36.69218329018642, -45.06991972863084), (43.97154480746007, -46.140677181254475)]
+lonlats2 = [[(-34.907587535813704, 50.58441270574641), True, [1, 2], 1, 'a'],
+            [(108.93083026662671, 32.38153601114477), False, [3, 4], 2, 'b'],
+            [(-36.69218329018642, -45.06991972863084), False, [5, 6], 3, 'c'],
+            [(43.97154480746007, -46.140677181254475), True, [7, 8], 4, 'd']]
+lonlats3 = [((-34.907587535813704, 50.58441270574641), 1), ((108.93083026662671, 32.38153601114477), 2),
+            ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
-    lat = 25.49225455501417
-    lon = -80.62948251805712
-    c = Point(lon, lat)
-    print(c.grid_reference())
+g = Grid(lonlats)
+g = Grid(lonlats2, 0)
+g = Grid(lonlats3, 0)
+g = Grid('points.csv', 'POINT_X', 'POINT_Y')
+g = Grid('points.shp')
+g = Grid('points.shp', epsg=3086)
+
+# These possibilities are done
+# print('Grid(True)')
+# g = Grid(True)
+# print('Grid(0)')
+# g = Grid(0)
+# print('Grid(1)')
+# g = Grid(1)
+# print('Grid(2)')
+# g = Grid(2)
+# print('Grid("i")')
+# g = Grid('i')
+# print('Grid("ijeg")')
+# g = Grid('ijeg')
+# print('Grid(0.123456)')
+# g = Grid(0.123456)
+# print('Grid([])')
+# g = Grid([])
+# print('Grid(())')
+# g = Grid(())
+# print('Grid([1])')
+# g = Grid([1])
+# print('Grid((1,))')
+# g = Grid((1,))
+# print('Grid((1))')
+# g = Grid((1))
+# g = Grid('points1.shp')
+# g = Grid('points.shp', epsg=45673086)
+# g = Grid('points.csv', 'POINT_X', 'POINT')
+# g = Grid('points.csv', 'POINT_X')
+# g = Grid('points1.csv', 'POINT_X', 'B')
+# print('Grid([1, 2])')
+# g = Grid([1, 2])
+# print('Grid((1, 2))')
+# g = Grid((1, 2))
+# print('Grid(lonlats2, 1)')
+# g = Grid(lonlats2, 1)
+# print('Grid(lonlats2, 2)')
+# g = Grid(lonlats2, 2)
+# print('Grid(lonlats2, 3)')
+# g = Grid(lonlats2, 3)
+# print('Grid(lonlats2, 4)')
+# g = Grid(lonlats2, 4)
+# print('Grid(lonlats2, 5)')
+# g = Grid(lonlats2, 5)
+# g = Grid(lonlats3)
