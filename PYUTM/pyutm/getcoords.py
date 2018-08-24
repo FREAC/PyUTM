@@ -13,8 +13,8 @@ def from_list(data, col):
                 coords = [(data[0], data[1])]
             else:
                 coords = data
-        xs = (coord[0] for coord in coords)
-        ys = (coord[1] for coord in coords)
+        xs = tuple(coord[0] for coord in coords)
+        ys = tuple(coord[1] for coord in coords)
     except (TypeError, IndexError):
         error = 'Invalid coordinates: {}'.format(coords)
     finally:
@@ -29,8 +29,8 @@ def from_csv(data, col1, col2):
     error = None
     try:
         df = pandas.read_csv(data)
-        xs = (df[col1])
-        ys = (df[col2])
+        xs = df[col1].values
+        ys = df[col2].values
     except (FileNotFoundError, KeyError) as e:
         if type(e).__name__ == 'KeyError':
             error = 'Invalid column names: col1={}, col2={}'.format(col1, col2)
@@ -51,8 +51,8 @@ def from_shapefile(data):
         shapes = sf.shapes()
         # Only accept Point, PointZ and PointM geometries
         if shapes[0].shapeType in (1, 11, 21):
-            xs = (shape.points[0][0] for shape in shapes)
-            ys = (shape.points[0][1] for shape in shapes)
+            xs = tuple(shape.points[0][0] for shape in shapes)
+            ys = tuple(shape.points[0][1] for shape in shapes)
     except shapefile.ShapefileException as e:
         error = e
     finally:

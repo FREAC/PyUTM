@@ -15,21 +15,11 @@ class Grid:
         self.xs = None
         self.ys = None
         self.error = None
-        self.grid_refs = []
+        self.grid_references = []
 
         self.set_coords()
         if self.epsg != 4326:
             self.transform_coords()
-
-
-        self.get_grid_refs()
-
-        print(self.grid_refs)
-
-    def get_grid_refs(self):
-
-        for x, y in zip(self.xs, self.ys):
-            self.grid_refs.append(locate.Point(x, y).get_grid_reference())
 
     def set_coords(self):
 
@@ -51,9 +41,20 @@ class Grid:
 
         try:
             p = pyproj.Proj(init='epsg:{}'.format(self.epsg))
-            self.xs, self.ys = p(self.xs.values, self.ys.values, inverse=True)
+            self.xs, self.ys = p(self.xs, self.ys, inverse=True)
         except RuntimeError:
             self.error('EPSG:{} not found'.format(self.epsg))
+
+    def get_grid_refs(self):
+
+        for x, y in zip(self.xs, self.ys):
+            self.grid_references.append(locate.Point(x, y).get_grid_reference())
+
+    def write_references(self, fname=None, col='GRID_REFS'):
+
+        if fname is None:
+            fname = self.data
+            self.get_grid_refs()
 
     def set_error(self, message):
 
@@ -77,11 +78,14 @@ if __name__ == "__main__":
     lonlats3 = [((-34.907587535813704, 50.58441270574641), 1), ((108.93083026662671, 32.38153601114477), 2),
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
-    g = Grid(lonlats)
-    g = Grid(lonlats2, 0)
-    g = Grid(lonlats3, 0)
-    g = Grid('points.csv', 'POINT_X', 'POINT_Y')
-    g = Grid('points.shp')
+    g = Grid((-34.907587535813704, 50.58441270574641))
+    g.write_references()
+    # g = Grid(lonlats)
+    # g = Grid(lonlats2, 0, epsg=3086)
+    # g = Grid(lonlats3, 0)
+    # g = Grid('points.csv', 'POINT_X', 'POINT_Y')
+    # g = Grid('points.shp')
+    # g = Grid('points.shp', epsg=3086)
 
     # g = Grid('good_crimes.csv', 'Longitude', 'Latitude', epsg=3086)
 
