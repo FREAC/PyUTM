@@ -83,7 +83,8 @@ if __name__ == "__main__":
     # g = Grid(lonlats)
     # g = Grid(lonlats2, 0, epsg=3086)
     # g = Grid(lonlats3, 0)
-    # g = Grid('points.csv', 'POINT_X', 'POINT_Y')
+    g = Grid('.test/data/points.csv', 'POINT_X', 'POINT_Y')
+    print(g.get_grid_refs())
     # g = Grid('points.shp')
     # g = Grid('points.shp', epsg=3086)
 
