@@ -1,6 +1,6 @@
 import pyproj
 
-import getcoords
+import data
 import locate
 
 
@@ -8,7 +8,8 @@ class Grid:
 
     def __init__(self, data, col1=None, col2=None, epsg=4326):
 
-        self.data = data
+        self.input_data = data
+        self.data = None
         self.col1 = col1
         self.col2 = col2
         self.epsg = epsg
@@ -18,19 +19,25 @@ class Grid:
         self.grid_references = []
 
         self.set_coords()
-        if self.epsg != 4326:
+
+        print(type(self.data))
+        print(self.data)
+
+        if self.error:
+            self.set_error(self.error)
+        elif self.epsg != 4326:
             self.transform_coords()
 
     def set_coords(self):
 
-        if isinstance(self.data, (tuple, list)) and (len(self.data) > 1):
-            self.xs, self.ys, self.error = getcoords.from_list(self.data, self.col1)
+        if isinstance(self.input_data, (tuple, list)) and (len(self.input_data) > 1):
+            self.data, self.error = data.from_list(self.input_data)
         else:
             try:
-                if self.data.endswith('.csv'):
-                    self.xs, self.ys, self.error = getcoords.from_csv(self.data, self.col1, self.col2)
-                elif self.data.endswith('.shp'):
-                    self.xs, self.ys, self.error = getcoords.from_shapefile(self.data)
+                if self.input_data.endswith('.csv'):
+                    self.data, self.error = data.from_csv(self.input_data)
+                elif self.input_data.endswith('.shp'):
+                    self.data, self.error = data.from_shapefile(self.input_data)
                 else:
                     raise AttributeError
             except AttributeError:
@@ -48,13 +55,14 @@ class Grid:
     def get_grid_refs(self):
 
         for x, y in zip(self.xs, self.ys):
+            print(x, y)
             self.grid_references.append(locate.Point(x, y).get_grid_reference())
 
     def write_references(self, fname=None, col='GRID_REFS'):
 
         if fname is None:
             fname = self.data
-            self.get_grid_refs()
+        self.get_grid_refs()
 
     def set_error(self, message):
 
@@ -79,14 +87,21 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
     g = Grid((-34.907587535813704, 50.58441270574641))
-    g.write_references()
-    # g = Grid(lonlats)
+    # g.write_references()
+    g = Grid(lonlats)
+    # g.write_references()
+    g = Grid(lonlats2)
+    g = Grid(lonlats2, ('coords', 'bools', 'lists', 'ints', 'str'))
     # g = Grid(lonlats2, 0, epsg=3086)
-    # g = Grid(lonlats3, 0)
-    g = Grid('.tests/data/points.csv', 'POINT_X', 'POINT_Y')
-    print(g.get_grid_refs())
-    # g = Grid('points.shp')
-    # g = Grid('points.shp', epsg=3086)
+    # g.write_references()
+    g = Grid(lonlats3, ('coords', 'int',))
+    # g.write_references()
+    g = Grid('../tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    # g.write_references()
+
+    # print(g.get_grid_refs())
+    g = Grid('../tests/data/points.shp')
+    # g = Grid('../tests/data/points.shp', epsg=3086)
 
     # g = Grid('good_crimes.csv', 'Longitude', 'Latitude', epsg=3086)
 
