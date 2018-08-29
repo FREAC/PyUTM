@@ -34,14 +34,21 @@ def from_shapefile(data):
     xs = None
     ys = None
     error = None
-    try:
-        sf = shapefile.Reader(data)
-        shapes = sf.shapes()
-        # Only accept Point, PointZ and PointM geometries
-        if sf.shapes()[0].shapeType in (1, 11, 21):
-            xs = pandas.Series(shape.points[0][0] for shape in shapes)
-            ys = pandas.Series(shape.points[0][1] for shape in shapes)
-    except shapefile.ShapefileException as e:
-        error = e
-    finally:
-        return xs, ys, error
+    # try:
+    sf = shapefile.Reader(data)
+    print(sf.fields)
+    # Only accept Point, PointZ and PointM geometries
+    if sf.shapes()[0].shapeType in (1, 11, 21):
+        print('here')
+        sr = sf.shapeRecords()
+
+        print(rec.record for rec in sr)
+        df = pandas.DataFrame.from_records(((row.shape.points[0]) for row in sf.shapeRecords()))
+
+        # xs = pandas.Series(shape.points[0][0] for shape in shapes)
+        # ys = pandas.Series(shape.points[0][1] for shape in shapes)
+    # except shapefile.ShapefileException as e:
+    #     error = e
+    # finally:
+    #     return xs, error
+    return df, error

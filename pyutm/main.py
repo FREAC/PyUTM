@@ -6,12 +6,11 @@ import locate
 
 class Grid:
 
-    def __init__(self, data, col1=None, col2=None, epsg=4326):
+    def __init__(self, data, columns=None, epsg=4326):
 
         self.input_data = data
         self.data = None
-        self.col1 = col1
-        self.col2 = col2
+        self.columns = columns
         self.epsg = epsg
         self.xs = None
         self.ys = None
@@ -20,8 +19,8 @@ class Grid:
 
         self.set_coords()
 
-        print(type(self.data))
-        print(self.data)
+        # print(type(self.data))
+        # print(self.data)
 
         if self.error:
             self.set_error(self.error)
@@ -41,8 +40,8 @@ class Grid:
                 else:
                     raise AttributeError
             except AttributeError:
-                self.set_error('Invalid parameters: Grid(data={}, col1={}, col2={}, epsg={})'.format(
-                    repr(self.data), self.col1, self.col2, self.epsg))
+                self.set_error('Invalid parameters: Grid(data={}, columns={}, epsg={})'.format(
+                    repr(self.input_data), self.columns, self.epsg))
 
     def transform_coords(self):
 
@@ -86,21 +85,21 @@ if __name__ == "__main__":
     lonlats3 = [((-34.907587535813704, 50.58441270574641), 1), ((108.93083026662671, 32.38153601114477), 2),
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
-    g = Grid((-34.907587535813704, 50.58441270574641))
+    # g = Grid((-34.907587535813704, 50.58441270574641))
     # g.write_references()
-    g = Grid(lonlats)
+    # g = Grid(lonlats)
     # g.write_references()
-    g = Grid(lonlats2)
-    g = Grid(lonlats2, ('coords', 'bools', 'lists', 'ints', 'str'))
+    # g = Grid(lonlats2)
+    # g = Grid(lonlats2, ('coords', 'bools', 'lists', 'ints', 'str'))
     # g = Grid(lonlats2, 0, epsg=3086)
     # g.write_references()
-    g = Grid(lonlats3, ('coords', 'int',))
+    # g = Grid(lonlats3, ('coords', 'int',))
     # g.write_references()
-    g = Grid('../tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    # g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
     # g.write_references()
 
     # print(g.get_grid_refs())
-    g = Grid('../tests/data/points.shp')
+    g = Grid('./tests/data/points.shp')
     # g = Grid('../tests/data/points.shp', epsg=3086)
 
     # g = Grid('good_crimes.csv', 'Longitude', 'Latitude', epsg=3086)
