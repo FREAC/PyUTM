@@ -9,37 +9,42 @@ class Grid:
     def __init__(self, data, columns=None, epsg=4326):
 
         self.input_data = data
+        self.input_columns = columns
         self.data = None
-        self.columns = columns
+        self.columns = None
         self.epsg = epsg
-        self.error = None
+        self.error_message = None
         self.grid_references = []
+
+        self.set_columns()
+        print(self.columns)
 
         self.set_coords()
 
         print(type(self.data))
         print(self.data)
 
-        if self.error:
-            self.set_error(self.error)
+        if self.error_message:
+            self.error(self.error_message)
         elif self.epsg != 4326:
             self.transform_coords()
 
     def set_coords(self):
 
         if isinstance(self.input_data, (tuple, list)) and (len(self.input_data) > 1):
-            self.data, self.error = data.from_list(self.input_data)
+            # self.data, self.error = data.from_list(self.input_data)
+            self.data, self.error_message = data.from_list2(self.input_data, self.columns)
         else:
             try:
-                if self.input_data.endswith('.csv'):
-                    self.data, self.error = data.from_csv(self.input_data, self.columns)
+                if self.input_data.endswith('.csv') and self.columns:
+                    self.data, self.error_message = data.from_csv(self.input_data, self.columns)
                 elif self.input_data.endswith('.shp'):
-                    self.data, self.error = data.from_shapefile(self.input_data)
+                    self.data, self.error_message = data.from_shapefile(self.input_data)
                 else:
                     raise AttributeError
             except AttributeError:
-                self.set_error('Invalid parameters: Grid(data={}, columns={}, epsg={})'.format(
-                    repr(self.input_data), self.columns, self.epsg))
+                self.error('Invalid parameters: Grid(data={}, columns={}, epsg={})'.format(
+                    repr(self.input_data), repr(self.input_columns), self.epsg))
 
     def transform_coords(self):
 
@@ -47,7 +52,7 @@ class Grid:
             p = pyproj.Proj(init='epsg:{}'.format(self.epsg))
             self.xs, self.ys = p(self.data[0][0], self.data[0][1], inverse=True)
         except RuntimeError:
-            self.error('EPSG:{} not found'.format(self.epsg))
+            self.error_message('EPSG:{} not found'.format(self.epsg))
 
     def get_grid_refs(self):
 
@@ -61,11 +66,22 @@ class Grid:
             fname = self.data
         self.get_grid_refs()
 
-    def set_error(self, message):
+    def set_columns(self):
+
+        if isinstance(self.input_columns, (int, tuple, list)):
+            try:
+                if len(self.input_columns) == 2:
+                    self.columns = tuple(self.input_columns)
+                else:
+                    self.columns = None
+            except TypeError:
+                self.columns = self.input_columns,
+
+    @staticmethod
+    def error(message):
 
         preamble = 'Error creating Grid object:'
-        self.error = ('{} {}'.format(preamble, message))
-        print(self.error)
+        print('{} {}'.format(preamble, message))
 
 
 if __name__ == "__main__":
@@ -85,15 +101,43 @@ if __name__ == "__main__":
 
     g = Grid((-34.907587535813704, 50.58441270574641))
     g = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
+              (9, (43.97154480746007, -46.140677181254475))], 1)
     g = Grid(lonlats)
-    g = Grid(lonlats2)
     g = Grid(lonlats3)
+
+    print()
+    print('g = Grid(lonlats2, 0)')
+    g = Grid(lonlats2, 0)
+
+    print()
+    print('g = Grid(lonlats2, (3, 10))')
+    g = Grid(lonlats2, (3, 10))
+
+    print()
+    print('g = Grid(lonlats3, 0)')
+    g = Grid(lonlats3, 0)
+
+    print()
+    print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
     g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+
+    print()
+    print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
     g = Grid('./tests/data/points.csv', ['POINT_X', 0])
+
+    print()
+    print("g = Grid('./tests/data/points.csv', ['POINT_X', 'PNT'])")
+    g = Grid('./tests/data/points.csv', ['POINT_X', 'PNT'])
+
+    print()
+    print("g = Grid('./tests/data/points.csv', 'POINT_X')")
     g = Grid('./tests/data/points.csv', 'POINT_X')
+    print()
+    print("g = Grid('./tests/data/points.csv')")
     g = Grid('./tests/data/points.csv')
     #
-    g = Grid('./tests/data/points.shp')
+    # g = Grid('./tests/data/points.shp')
     # g = Grid('../tests/data/points.shp', epsg=3086)
 
     # g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
