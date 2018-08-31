@@ -96,9 +96,9 @@ if __name__ == "__main__":
     g = Grid('./tests/data/points.shp')
     # g = Grid('../tests/data/points.shp', epsg=3086)
 
-    g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
+    # g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
 
-    g = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    # g = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
 
     # print(g.grid_refs)
 

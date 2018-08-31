@@ -3,8 +3,8 @@ import pandas
 
 def from_list(data):
 
-    import numpy
     try:
+        import numpy
         df = None
         error = None
         dim = numpy.array(data, ndmin=2).shape
@@ -51,20 +51,18 @@ def from_csv(data, columns):
 
 def from_shapefile(data):
 
-    import shapefile
-
     try:
+        import shapefile
         df = None
         error = None
-        fields = [0]
         sf = shapefile.Reader(data)
-        fields.extend([att[0] for att in sf.fields[1:]])
         # Only accept Point, PointZ and PointM geometries
         if sf.shapes()[0].shapeType in (1, 11, 21):
-            df_geometry = pandas.DataFrame.from_records(rec.shape.points for rec in sf.shapeRecords())
-            df_attributes = pandas.DataFrame.from_records(rec.record for rec in sf.shapeRecords())
-            df = df_geometry.join(df_attributes, lsuffix='x', rsuffix='y')
-            df.columns = fields
+            fields = [attribute[0] for attribute in sf.fields[1:]]
+            records = sf.records()
+            geometry = [shape.points[0] for shape in sf.shapes()]
+            df = pandas.DataFrame(columns=fields, data=records)
+            df.insert(0, 0, geometry)
     except (AttributeError, shapefile.ShapefileException) as e:
         df = None
         error = e
