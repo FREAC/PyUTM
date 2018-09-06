@@ -1,7 +1,7 @@
 import pyproj
 
 
-class Point_OLD:
+class Point:
 
     def __init__(self, longitude, latitude, precision=1):
         """
@@ -69,7 +69,7 @@ class Point_OLD:
         if self.zone_letter < 'N':
             proj4 += ' +south'
         p = pyproj.Proj(proj4)
-        self.utm_e, self.utm_n = p(longitude.values, latitude.values)
+        self.utm_e, self.utm_n = p(longitude, latitude)
 
     @staticmethod
     def reduce_to_100k(number):
@@ -175,7 +175,7 @@ class Point_OLD:
             return None
 
 
-class Point:
+class Point_PANDAS:
 
     def __init__(self, dataframe, precision=1):
 
@@ -233,7 +233,7 @@ class Point:
     def set_utm(self):
 
         try:
-            self.df['utm'] = self.df.apply(self.set_proj4, axis=1)
+            self.df['utme'], self.df['utmn'] = zip(*self.df.apply(self.set_proj4, axis=1))
 
         except AttributeError:
             # This deals with NoneTypes return from set_gzd

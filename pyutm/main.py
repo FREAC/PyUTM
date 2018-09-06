@@ -25,8 +25,6 @@ class Grid:
         if self.error_message:
             self.error(self.error_message)
 
-        # print(self.data)
-
     def set_data(self):
 
         if isinstance(self.input_data, (tuple, list)) and (len(self.input_data) > 1):
@@ -51,15 +49,19 @@ class Grid:
         except RuntimeError:
             self.error_message = 'EPSG:{} not found'.format(self.epsg)
 
-    def get_grid_refs(self):
+    def get_grid_refs(self, column):
 
-        locate.Point(self.data)
+        try:
+            self.data[column] = [locate.Point(coord[0], coord[1]).get_grid_reference()
+                                 for coord in self.data.values]
+        except (KeyError, ValueError):
+            self.error('Invalid column name')
 
-    def write_references(self, fname=None, col='GRID_REFS'):
+    def write_references(self, fname=None, column='GRID_REFS'):
 
         if fname is None:
             fname = self.data
-        self.get_grid_refs()
+        self.get_grid_refs(column)
 
     def set_columns(self):
 
@@ -99,8 +101,8 @@ if __name__ == "__main__":
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
     i = Grid(lonlats)
     i.write_references()
-    j = Grid(lonlats2)
-    j.write_references()
+    # j = Grid(lonlats2)
+    # j.write_references()
     # g = Grid(lonlats3)
     # #
     # print()
@@ -139,21 +141,21 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv')")
     # g = Grid('./tests/data/points.csv')
 
-    # g = Grid('./tests/data/points.shp')
-    # g = Grid('./tests/data/points.shp', epsg=3086)
+    g = Grid('./tests/data/points.shp')
+    x = Grid('./tests/data/points.shp', epsg=3086)
+    x.write_references(column='Grid ID')
 
     import time
 
     start = time.time()
-    g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
-    g.write_references()
+    b = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
+    b.write_references()
     print(time.time() - start)
 
-    # import time
-    # start = time.time()
-    # c = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
-    # c.write_references()
-    # print(time.time() - start)
+    start = time.time()
+    c = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    c.write_references()
+    print(time.time() - start)
 
     # print(g.grid_refs)
 
