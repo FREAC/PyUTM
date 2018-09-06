@@ -33,10 +33,10 @@ class Point:
         Determines the number of a point's grid zone designation using the logic in chapters 2 and 3.
         :param longitude: float
         """
-        if -180 <= longitude <= 180:
-            number = int(longitude / 6 + 31)
+        if -180 <= longitude.all() <= 180:
+            number = longitude // 6 + 31
             # Adjust for the valid input of 180 degrees longitude
-            if number == 61:
+            if number.eq(61):
                 number = 1
             self.zone_number = number
         else:
@@ -48,9 +48,9 @@ class Point:
         Determines the letter of a point's grid zone designation using the logic in chapters 2 and 3.
         :param latitude: float
         """
-        if -80 <= latitude <= 84:
+        if -80 <= latitude.all() <= 84:
             letter = 'CDEFGHJKLMNPQRSTUVWX'
-            index = int(latitude / 8 + 10)
+            index = latitude // 8 + 10
             # Adjust for the valid inputs 80 <= latitude <= 84
             if index == 20:
                 index = 19
@@ -69,7 +69,7 @@ class Point:
         if self.zone_letter < 'N':
             proj4 += ' +south'
         p = pyproj.Proj(proj4)
-        self.utm_e, self.utm_n = p(longitude, latitude)
+        self.utm_e, self.utm_n = p(longitude.values, latitude.values)
 
     @staticmethod
     def reduce_to_100k(number):
