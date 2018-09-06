@@ -26,7 +26,6 @@ class Grid:
             self.error(self.error_message)
 
         # print(self.data)
-        print('object created')
 
     def set_data(self):
 
@@ -54,8 +53,7 @@ class Grid:
 
     def get_grid_refs(self):
 
-        for x, y in zip(self.xs, self.ys):
-            self.grid_references.append(locate.Point(x, y).get_grid_reference())
+        locate.Point(self.data)
 
     def write_references(self, fname=None, col='GRID_REFS'):
 
@@ -94,11 +92,15 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
     g = Grid((-34.907587535813704, 50.58441270574641))
-    g = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    g.write_references()
+    h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    h.write_references()
     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
-    # g = Grid(lonlats)
-    # g = Grid(lonlats2)
+    i = Grid(lonlats)
+    i.write_references()
+    j = Grid(lonlats2)
+    j.write_references()
     # g = Grid(lonlats3)
     # #
     # print()
@@ -137,12 +139,21 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv')")
     # g = Grid('./tests/data/points.csv')
 
-    g = Grid('./tests/data/points.shp')
-    g = Grid('./tests/data/points.shp', epsg=3086)
+    # g = Grid('./tests/data/points.shp')
+    # g = Grid('./tests/data/points.shp', epsg=3086)
 
-    # g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
-    #
-    # g = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    import time
+
+    start = time.time()
+    g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
+    g.write_references()
+    print(time.time() - start)
+
+    # import time
+    # start = time.time()
+    # c = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    # c.write_references()
+    # print(time.time() - start)
 
     # print(g.grid_refs)
 
@@ -179,15 +190,15 @@ if __name__ == "__main__":
 # print('Grid((1))')
 # g = Grid((1))
 # g = Grid('points1.shp')
-print("g = Grid('./tests/data/points.shp', epsg=45673086)")
-g = Grid('./tests/data/points.shp', epsg=45673086)
-print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])
-print("g = Grid('points.csv', ['POINT_X', 'POINT_Y'])")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 26910)
-
-print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')
+# print("g = Grid('./tests/data/points.shp', epsg=45673086)")
+# g = Grid('./tests/data/points.shp', epsg=45673086)
+# print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])
+# print("g = Grid('points.csv', ['POINT_X', 'POINT_Y'])")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 26910)
+#
+# print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')
 # print('Grid([1, 2])')
 # g = Grid([1, 2])
 # print('Grid((1, 2))')
