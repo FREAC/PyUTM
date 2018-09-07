@@ -11,7 +11,6 @@ class Point:
         :param latitude: float
         :param precision: int, default=1, desired precision of the grid reference
         """
-
         self.zone_number = None
         self.zone_letter = None
         self.k100_id = None
@@ -20,8 +19,11 @@ class Point:
         self.utm_n = None
         self.grid_reference = self.get_grid_reference()
 
-        self.set_zone_number(longitude)
-        self.set_zone_letter(latitude)
+        try:
+            self.set_zone_number(longitude)
+            self.set_zone_letter(latitude)
+        except TypeError:
+            pass
 
         if self.zone_number and self.zone_letter:
             self.lonlat_to_utm(longitude, latitude)
@@ -59,6 +61,8 @@ class Point:
             # todo deal with polar coordinates
             pass
 
+    # TODO This should be broken out and run on either the entire dataset at once or on the separate
+    # zone numbers and hemispheres
     def lonlat_to_utm(self, longitude, latitude):
         """
         Converts a given latitude and longitude to its UTM coordinate value.
@@ -172,97 +176,4 @@ class Point:
         if self.zone_number and self.zone_letter:
             return '{:02}{}{}{}'.format(self.zone_number, self.zone_letter, self.k100_id, self.grid_coords)
         else:
-            return None
-
-
-class Point_PANDAS:
-
-    def __init__(self, dataframe, precision=1):
-
-        self.df = dataframe
-        self.df1 = dataframe
-
-        self.set_gzd()
-        self.set_utm()
-
-        print(self.df)
-        print('-' * 30)
-
-    def set_gzd(self):
-
-        try:
-            self.df['znum'] = self.df.iloc[:, 1].apply(self.set_zone_number)
-            self.df['zlet'] = self.df.iloc[:, 0].apply(self.set_zone_letter)
-            self.df['gzd'] = self.df['znum'] + self.df['zlet']
-        except TypeError:
-            self.df = None
-
-    @staticmethod
-    def set_zone_number(longitude):
-        """
-        Determines the number of a point's grid zone designation using the logic in chapters 2 and 3.
-        :param longitude: float
-        """
-        if -180 <= longitude <= 180:
-            number = int(longitude / 6 + 31)
-            # Adjust for the valid input of 180 degrees longitude
-            if number == 61:
-                number = 1
-            return str(number)
-        else:
-            # todo deal with exceptions in V and X
-            return None
-
-    @staticmethod
-    def set_zone_letter(latitude):
-        """
-        Determines the letter of a point's grid zone designation using the logic in chapters 2 and 3.
-        :param latitude: float
-        """
-        if -80 <= latitude <= 84:
-            letter = 'CDEFGHJKLMNPQRSTUVWX'
-            index = int(latitude / 8 + 10)
-            # Adjust for the valid inputs 80 <= latitude <= 84
-            if index == 20:
-                index = 19
-            return letter[index]
-        else:
-            # todo deal with polar coordinates
-            return None
-
-    def set_utm(self):
-
-        try:
-            self.df['utme'], self.df['utmn'] = zip(*self.df.apply(self.set_proj4, axis=1))
-
-        except AttributeError:
-            # This deals with NoneTypes return from set_gzd
-            self.df = None
-
-    @staticmethod
-    def lonlat_to_utm(zone_number, zone_letter, longitude, latitude):
-        """
-        Converts a given latitude and longitude to its UTM coordinate value.
-        :param zone_number: string
-        :param zone_letter: string
-        :param longitude: float
-        :param latitude: float
-        """
-        proj4 = '+proj=utm +zone={} +datum=WGS84 +units=m +no_defs'.format(zone_number)
-        if zone_letter < 'N':
-            proj4 += ' +south'
-        p = pyproj.Proj(proj4)
-        return p(longitude.values, latitude.values)
-
-    @staticmethod
-    def set_proj4(row):
-
-        proj4 = '+proj=utm +zone={} +datum=WGS84 +units=m +no_defs'.format(row['znum'])
-        try:
-            if row['zlet'] < 'N':
-                proj4 += ' +south'
-            p = pyproj.Proj(proj4)
-            return p(row[0], row[1])
-        except TypeError:
-            # This deals with NoneTypes in empty rows
             return None
