@@ -87,7 +87,8 @@ class Grid:
             setrefs.to_csv(fname, self.input_data, self.data, column)
             return None
         else:
-            pass
+            setrefs.to_shp(fname, self.input_data, self.data)
+            return None
 
 
 if __name__ == "__main__":
@@ -135,9 +136,8 @@ if __name__ == "__main__":
     #
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
-    g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = g.write_references(fname=r'D:\Projects\USNG\test.csv')
-    csv_output = g.write_references()
+    # g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    # csv_output = g.write_references(fname=r'.\test.csv')
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
@@ -160,11 +160,11 @@ if __name__ == "__main__":
     # g = Grid('./tests/data/points.csv')
 
     j = Grid('./tests/data/points.shp')
-    j_output = j.write_references()
+    j_output = j.write_references(fname=r'./test.shp')
     print(j_output)
 
     x = Grid('./tests/data/points.shp', epsg=3086)
-    x_output = x.write_references(column='Grid ID')
+    x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
     print(x_output)
 
     # import time

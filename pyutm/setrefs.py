@@ -18,8 +18,8 @@ def to_csv(fname, input_data, dataframe, column):
 
 def to_shp(fname, input_data, dataframe):
 
+    fname = set_fname(fname, input_data)
 
-    return
 
 
 def set_fname(fname, input_data):
@@ -32,6 +32,6 @@ def set_fname(fname, input_data):
             output_dir = os.path.dirname(input_data)
             return os.path.join(output_dir, fname)
         else:
-            return None
+            raise FileNotFoundError
     else:
         return input_data
