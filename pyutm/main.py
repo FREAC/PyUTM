@@ -1,4 +1,5 @@
 import sys
+
 import pyproj
 
 import data
@@ -62,20 +63,6 @@ class Grid:
         except (KeyError, ValueError):
             self.error('Invalid column name')
 
-    def write_references(self, fname='test', column='GRID_REFS', precision=1):
-
-        if fname is None:
-            fname = self.data
-        self.get_grid_refs(column, precision)
-
-        if self.input_datatype == 0:
-            return setrefs.to_list(self.data)
-        elif self.input_datatype == 1:
-            setrefs.to_csv(fname, self.input_data, self.data, column)
-            return None
-        else:
-            pass
-
     def set_columns(self):
 
         if isinstance(self.input_columns, (tuple, list)):
@@ -89,6 +76,18 @@ class Grid:
 
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
+
+    def write_references(self, fname=None, column='GRID_REFS', precision=1):
+
+        self.get_grid_refs(column, precision)
+
+        if self.input_datatype == 0:
+            return setrefs.to_list(self.data)
+        elif self.input_datatype == 1:
+            setrefs.to_csv(fname, self.input_data, self.data, column)
+            return None
+        else:
+            pass
 
 
 if __name__ == "__main__":
@@ -137,7 +136,8 @@ if __name__ == "__main__":
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
     g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = g.write_references(fname='test.csv')
+    csv_output = g.write_references(fname=r'D:\Projects\USNG\test.csv')
+    csv_output = g.write_references()
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
