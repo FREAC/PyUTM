@@ -1,8 +1,10 @@
 import sys
+
 import pyproj
 
 import data
 import locate
+import setrefs
 
 
 class Grid:
@@ -11,6 +13,8 @@ class Grid:
 
         self.input_data = data
         self.input_columns = columns
+        self.input_datatype = None
+        self.shape_type = None
         self.data = None
         self.columns = None
         self.epsg = epsg
@@ -25,19 +29,19 @@ class Grid:
         if self.error_message:
             self.error(self.error_message)
 
-        # print(self.data)
-        print('object created')
-
     def set_data(self):
 
         if isinstance(self.input_data, (tuple, list)) and (len(self.input_data) > 1):
+            self.input_datatype = 0
             self.data, self.error_message = data.from_list(self.input_data)
         else:
             try:
                 if self.input_data.endswith('.csv') and self.columns:
+                    self.input_datatype = 1
                     self.data, self.error_message = data.from_csv(self.input_data, self.columns)
                 elif self.input_data.endswith('.shp'):
-                    self.data, self.error_message = data.from_shapefile(self.input_data)
+                    self.input_datatype = 2
+                    self.data, self.shape_type, self.error_message = data.from_shapefile(self.input_data)
                 else:
                     raise AttributeError
             except AttributeError:
@@ -52,16 +56,13 @@ class Grid:
         except RuntimeError:
             self.error_message = 'EPSG:{} not found'.format(self.epsg)
 
-    def get_grid_refs(self):
+    def get_grid_refs(self, column, precision):
 
-        for x, y in zip(self.xs, self.ys):
-            self.grid_references.append(locate.Point(x, y).get_grid_reference())
-
-    def write_references(self, fname=None, col='GRID_REFS'):
-
-        if fname is None:
-            fname = self.data
-        self.get_grid_refs()
+        try:
+            self.data[column] = [locate.Point(coord[0], coord[1], precision).get_grid_reference()
+                                 for coord in self.data.values]
+        except (KeyError, ValueError):
+            self.error('Invalid column name')
 
     def set_columns(self):
 
@@ -76,6 +77,16 @@ class Grid:
 
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
+
+    def write_refs(self, fname=None, column='GRID_REFS', precision=1):
+
+        self.get_grid_refs(column, precision)
+
+        if self.input_datatype == 1:
+            setrefs.to_csv(fname, column, self.input_data, self.data)
+        elif self.input_datatype == 2:
+            setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
+        return setrefs.to_list(self.data)
 
 
 if __name__ == "__main__":
@@ -94,11 +105,19 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
     g = Grid((-34.907587535813704, 50.58441270574641))
-    g = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    g_output = g.write_refs(precision=10)
+    print(g_output)
+    h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    h_output = h.write_refs()
+    print(h_output)
     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
-    # g = Grid(lonlats)
-    # g = Grid(lonlats2)
+    i = Grid(lonlats)
+    i_output = i.write_refs()
+    print(i_output)
+    j = Grid(lonlats2)
+    j_output = j.write_refs()
+    print(j_output)
     # g = Grid(lonlats3)
     # #
     # print()
@@ -115,8 +134,10 @@ if __name__ == "__main__":
     #
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
-    # g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    #
+    c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    csv_output = c.write_refs(fname=r'.\test.csv')
+    print(csv_output)
+
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
     # g = Grid('./tests/data/points.csv', ['POINT_X', 0])
@@ -137,19 +158,33 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv')")
     # g = Grid('./tests/data/points.csv')
 
-    g = Grid('./tests/data/points.shp')
-    g = Grid('./tests/data/points.shp', epsg=3086)
+    j = Grid('./tests/data/points.shp')
+    j_output = j.write_refs(r'test.shp')
+    print(j_output)
 
-    # g = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
+    # x = Grid('./tests/data/points.shp', epsg=3086)
+    # x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
+    # print(x_output)
+
+    # import time
     #
-    # g = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    # start = time.time()
+    # b = Grid('./tests/data/good_crimes.csv', ('Longitude', 'Latitude'))
+    # b.write_references()
+    # print(time.time() - start)
+    #
+    # start = time.time()
+    # c = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
+    # test3 = c.write_references()
+    # print(test3)
+    # print(time.time() - start)
 
     # print(g.grid_refs)
 
     # These are the desired method calls
     # g = Grid('myassets.csv', ['Lon', 'Lat'], epsg=3086)
-    # g.write_refs('myassets.shp', 'MY_OFFICIAL_GRID_REFERENCES')
-    # g.write_assets('myassets.shp', 'MY_UNIQUE_ASSET_NAMES',
+    # g.write_refs('myassets.shp', 'MY_OFFICIAL_GRID_REFERENCES', precision=100)
+    # g.write_assets('myassets.shp', 'MY_UNIQUE_ASSET_NAMES', precision=100,
     # prefix='H', col=None, gzd=False, k100=False, delimiter='-')
 
 
@@ -179,15 +214,15 @@ if __name__ == "__main__":
 # print('Grid((1))')
 # g = Grid((1))
 # g = Grid('points1.shp')
-print("g = Grid('./tests/data/points.shp', epsg=45673086)")
-g = Grid('./tests/data/points.shp', epsg=45673086)
-print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])
-print("g = Grid('points.csv', ['POINT_X', 'POINT_Y'])")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 26910)
-
-print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')")
-g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')
+# print("g = Grid('./tests/data/points.shp', epsg=45673086)")
+# g = Grid('./tests/data/points.shp', epsg=45673086)
+# print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT'])
+# print("g = Grid('points.csv', ['POINT_X', 'POINT_Y'])")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 26910)
+#
+# print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')")
+# g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'], 'B')
 # print('Grid([1, 2])')
 # g = Grid([1, 2])
 # print('Grid((1, 2))')
