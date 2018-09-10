@@ -14,6 +14,7 @@ class Grid:
         self.input_data = data
         self.input_columns = columns
         self.input_datatype = None
+        self.shape_type = None
         self.data = None
         self.columns = None
         self.epsg = epsg
@@ -40,7 +41,7 @@ class Grid:
                     self.data, self.error_message = data.from_csv(self.input_data, self.columns)
                 elif self.input_data.endswith('.shp'):
                     self.input_datatype = 2
-                    self.data, self.error_message = data.from_shapefile(self.input_data)
+                    self.data, self.shape_type, self.error_message = data.from_shapefile(self.input_data)
                 else:
                     raise AttributeError
             except AttributeError:
@@ -77,18 +78,15 @@ class Grid:
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
 
-    def write_references(self, fname=None, column='GRID_REFS', precision=1):
+    def write_refs(self, fname=None, column='GRID_REFS', precision=1):
 
         self.get_grid_refs(column, precision)
 
-        if self.input_datatype == 0:
-            return setrefs.to_list(self.data)
-        elif self.input_datatype == 1:
-            setrefs.to_csv(fname, self.input_data, self.data, column)
-            return None
-        else:
-            setrefs.to_shp(fname, self.input_data, self.data)
-            return None
+        if self.input_datatype == 1:
+            setrefs.to_csv(fname, column, self.input_data, self.data)
+        elif self.input_datatype == 2:
+            setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
+        return setrefs.to_list(self.data)
 
 
 if __name__ == "__main__":
@@ -107,18 +105,18 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
     g = Grid((-34.907587535813704, 50.58441270574641))
-    g_output = g.write_references(precision=10)
+    g_output = g.write_refs(precision=10)
     print(g_output)
     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
-    h_output = h.write_references()
+    h_output = h.write_refs()
     print(h_output)
     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
     i = Grid(lonlats)
-    i_output = i.write_references()
+    i_output = i.write_refs()
     print(i_output)
     j = Grid(lonlats2)
-    j_output = j.write_references()
+    j_output = j.write_refs()
     print(j_output)
     # g = Grid(lonlats3)
     # #
@@ -136,8 +134,9 @@ if __name__ == "__main__":
     #
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
-    # g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    # csv_output = g.write_references(fname=r'.\test.csv')
+    c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    csv_output = c.write_refs(fname=r'.\test.csv')
+    print(csv_output)
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
@@ -160,12 +159,12 @@ if __name__ == "__main__":
     # g = Grid('./tests/data/points.csv')
 
     j = Grid('./tests/data/points.shp')
-    j_output = j.write_references(fname=r'./test.shp')
+    j_output = j.write_refs(r'test.shp')
     print(j_output)
 
-    x = Grid('./tests/data/points.shp', epsg=3086)
-    x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
-    print(x_output)
+    # x = Grid('./tests/data/points.shp', epsg=3086)
+    # x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
+    # print(x_output)
 
     # import time
     #
