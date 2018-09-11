@@ -4,36 +4,36 @@ import pandas
 def from_list(data):
 
     try:
-        df = None
+        dataframe = None
         error = None
         import numpy
-        df = pandas.DataFrame.from_records(numpy.array(data, ndmin=2))
+        dataframe = pandas.DataFrame.from_records(numpy.array(data, ndmin=2))
     except ValueError as e:
-        df = None
+        dataframe = None
         error = e
     finally:
-        return df, error
+        return dataframe, error
 
 
 def from_csv(data, columns):
 
     try:
-        df = None
+        dataframe = None
         error = None
-        df = pandas.read_csv(data, usecols=columns, engine='c')
-        df = df[list(columns)]
-        df.columns = (0, 1)
+        dataframe = pandas.read_csv(data, usecols=columns, engine='c')
+        dataframe = dataframe[list(columns)]
+        dataframe.columns = (0, 1)
     except (FileNotFoundError, ValueError) as e:
-        df = None
+        dataframe = None
         error = e
     finally:
-        return df, error
+        return dataframe, error
 
 
 def from_shapefile(data):
 
     try:
-        df = None
+        dataframe = None
         error = None
         import shapefile
         sf = shapefile.Reader(data)
@@ -41,9 +41,9 @@ def from_shapefile(data):
         # Only accept Point, PointZ and PointM geometries
         if shape_type in (1, 11, 21):
             coords = [shape.points[0] for shape in sf.iterShapes()]
-            df = pandas.DataFrame(columns=(0, 1), data=coords)
+            dataframe = pandas.DataFrame(columns=(0, 1), data=coords)
     except shapefile.ShapefileException as e:
-        df = None
+        dataframe = None
         error = e
     finally:
-        return df, shape_type, error
+        return dataframe, shape_type, error

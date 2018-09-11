@@ -59,14 +59,16 @@ class Grid:
     def get_grid_refs(self, column, precision):
 
         try:
-            self.data[column] = [locate.Point(coord[0], coord[1], precision).get_grid_reference()
-                                 for coord in self.data.values]
+            self.data[column] = [locate.Point(coord[0], coord[1], precision).grid_ref for coord in self.data.values]
         except (KeyError, ValueError):
             self.error('Invalid column name')
 
-    def get_grid_assets(self, ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter):
+    def get_grid_assets(self, grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter):
 
-        self.data[asset_column] = locate.Assets(ref_column, precision, prefix, prefix_column, gzd, k100, delimiter)
+        if grid_refs.any():
+            self.data[uid_column] = locate.Assets(grid_refs, prefix, prefix_column, gzd, k100, delimiter)
+        else:
+            self.data[uid_column] = None
 
     def set_columns(self):
 
@@ -87,12 +89,14 @@ class Grid:
         self.get_grid_refs(ref_column, precision)
         return self.write_data(fname, ref_column)
 
-    def write_assets(self, fname=None, asset_column='ASSET_REFS', ref_column='GRID_REFS', precision=1,
-                     prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
+    def write_uids(self, fname=None, uid_column='UID_REFS', precision=1,
+                   prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
 
+        ref_column = 'GRID_REFS'
         self.get_grid_refs(ref_column, precision)
-        self.get_grid_assets(ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter)
-        return self.write_data(fname, asset_column)
+        grid_refs = self.data[ref_column]
+        self.get_grid_assets(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
+        # return self.write_data(fname, uid_column)
 
     def write_data(self, fname, column):
 
@@ -119,18 +123,22 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
     g = Grid((-34.907587535813704, 50.58441270574641))
-    g_output = g.write_refs(precision=10)
+    # g_output = g.write_refs(precision=10)
+    g_output = g.write_uids(gzd=False, prefix='QT')
     print(g_output)
     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
-    h_output = h.write_refs()
+    # h_output = h.write_refs()
+    h_output = h.write_uids(k100=False, prefix='pi')
     print(h_output)
     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
     i = Grid(lonlats)
-    i_output = i.write_refs()
+    # i_output = i.write_refs()
+    i_output = i.write_uids()
     print(i_output)
     j = Grid(lonlats2)
-    j_output = j.write_refs()
+    # j_output = j.write_refs()
+    j_output = j.write_uids()
     print(j_output)
 
 
@@ -151,7 +159,8 @@ if __name__ == "__main__":
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
     c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = c.write_refs(fname=r'.\test.csv')
+    # csv_output = c.write_refs(fname=r'.\test.csv')
+    csv_output = c.write_uids(gzd=False)
     print(csv_output)
 
     # print()
@@ -175,7 +184,8 @@ if __name__ == "__main__":
     # g = Grid('./tests/data/points.csv')
 
     j = Grid('./tests/data/points.shp')
-    j_output = j.write_refs(r'test.shp')
+    # j_output = j.write_refs(r'test.shp')
+    j_output = j.write_uids()
     print(j_output)
 
     # x = Grid('./tests/data/points.shp', epsg=3086)

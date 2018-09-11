@@ -17,7 +17,6 @@ class Point:
         self.grid_coords = None
         self.utm_e = None
         self.utm_n = None
-        self.grid_reference = self.get_grid_reference()
 
         try:
             self.set_zone_number(longitude)
@@ -29,6 +28,8 @@ class Point:
             self.lonlat_to_utm(longitude, latitude)
             self.set_100k_id()
             self.set_grid_coords(precision)
+
+        self.grid_ref = self.get_grid_reference()
 
     def set_zone_number(self, longitude):
         """
@@ -170,10 +171,64 @@ class Point:
 
     def get_grid_reference(self):
         """
-        Reports the grid reference for the given point using the specified level of precision.
+        Reports the properly formatted grid reference for the given point.
         :return: string
         """
         if self.zone_number and self.zone_letter:
             return '{:02}{}{}{}'.format(self.zone_number, self.zone_letter, self.k100_id, self.grid_coords)
         else:
             return None
+
+
+class Assets:
+
+    def __init__(self, grid_refs, prefix, prefix_column, gzd, k100, delimiter):
+
+        self.grid_refs = grid_refs
+        self.uids = grid_refs
+        self.prefix = prefix
+        self.prefix_column = prefix_column
+        self.gzd = gzd
+        self.k100 = k100
+        self.delimiter = delimiter
+
+        if not k100:
+            self.remove_k100()
+        elif not gzd:
+            self.remove_gzd()
+        else:
+            self.add_delimiter()
+
+
+        self.add_prefix()
+
+        print(self.uids)
+
+        self.add_uid()
+
+    def remove_k100(self):
+
+        self.uids = self.uids.str.slice(start=5)
+
+    def remove_gzd(self):
+
+        self.uids = self.uids.str.slice(start=3, stop=5) + self.delimiter + self.uids.str.slice(start=5)
+
+    def add_delimiter(self):
+
+        # self.uids = self.uids.str.slice(stop=3) + self.delimiter +\
+        #             self.uids.str.slice(start=3, stop=5) + self.delimiter +\
+        #             self.uids.str.slice(start=5)
+
+        self.uids = self.uids.str[:3]
+
+    def add_prefix(self):
+
+        if self.prefix_column:
+            pass
+        elif self.prefix:
+            self.uids = '{}{}'.format(self.prefix, self.delimiter) + self.uids.astype(str)
+
+    def add_uid(self):
+
+        pass
