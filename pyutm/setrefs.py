@@ -1,9 +1,9 @@
 import os
 
 
-def to_list(dataframe):
+def to_list(dataframe, column):
 
-    return dataframe.values.tolist()
+    return dataframe.loc[:, [0, 1, column]].values.tolist()
 
 
 def to_csv(fname, column, input_data, dataframe):
@@ -19,21 +19,14 @@ def to_shp(fname, column, input_data, dataframe, shape_type):
 
     import shapefile
     fname = set_fname(fname, input_data)
-    try:
-        r = shapefile.Reader(input_data)
-        w = shapefile.Writer(shape_type)
-        w.fields = r.fields[1:]
-        w.field(column, 'C', size=15)
-
-        for index, shaperec in enumerate(r.iterShapeRecords()):
-            w.point(*shaperec.shape.points[0])
-            w.record(*shaperec.record + [dataframe[column].iloc[index]])
-        w.save(fname)
-    finally:
-        try:
-            w.close()
-        except AttributeError:
-            pass
+    r = shapefile.Reader(input_data)
+    w = shapefile.Writer(shape_type)
+    w.fields = r.fields[1:]
+    w.field(column, 'C', size=15)
+    for index, shaperec in enumerate(r.iterShapeRecords()):
+        w.point(*shaperec.shape.points[0])
+        w.record(*shaperec.record + [dataframe[column].iloc[index]])
+    w.save(fname)
 
 
 def set_fname(path, input_data):

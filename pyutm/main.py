@@ -64,6 +64,10 @@ class Grid:
         except (KeyError, ValueError):
             self.error('Invalid column name')
 
+    def get_grid_assets(self, ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter):
+
+        self.data[asset_column] = locate.Assets(ref_column, precision, prefix, prefix_column, gzd, k100, delimiter)
+
     def set_columns(self):
 
         if isinstance(self.input_columns, (tuple, list)):
@@ -78,15 +82,25 @@ class Grid:
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
 
-    def write_refs(self, fname=None, column='GRID_REFS', precision=1):
+    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=1):
 
-        self.get_grid_refs(column, precision)
+        self.get_grid_refs(ref_column, precision)
+        return self.write_data(fname, ref_column)
+
+    def write_assets(self, fname=None, asset_column='ASSET_REFS', ref_column='GRID_REFS', precision=1,
+                     prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
+
+        self.get_grid_refs(ref_column, precision)
+        self.get_grid_assets(ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter)
+        return self.write_data(fname, asset_column)
+
+    def write_data(self, fname, column):
 
         if self.input_datatype == 1:
             setrefs.to_csv(fname, column, self.input_data, self.data)
         elif self.input_datatype == 2:
             setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
-        return setrefs.to_list(self.data)
+        return setrefs.to_list(self.data, column)
 
 
 if __name__ == "__main__":
@@ -118,6 +132,8 @@ if __name__ == "__main__":
     j = Grid(lonlats2)
     j_output = j.write_refs()
     print(j_output)
+
+
     # g = Grid(lonlats3)
     # #
     # print()
