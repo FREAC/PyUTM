@@ -192,35 +192,24 @@ class Assets:
         self.k100 = k100
         self.delimiter = delimiter
 
-        if not k100:
-            self.remove_k100()
-        elif not gzd:
-            self.remove_gzd()
-        else:
-            self.add_delimiter()
-
-
+        self.set_base_uid()
         self.add_prefix()
+        self.add_uid()
 
         print(self.uids)
 
-        self.add_uid()
+    def set_base_uid(self):
 
-    def remove_k100(self):
-
-        self.uids = self.uids.str.slice(start=5)
-
-    def remove_gzd(self):
-
-        self.uids = self.uids.str.slice(start=3, stop=5) + self.delimiter + self.uids.str.slice(start=5)
-
-    def add_delimiter(self):
-
-        # self.uids = self.uids.str.slice(stop=3) + self.delimiter +\
-        #             self.uids.str.slice(start=3, stop=5) + self.delimiter +\
-        #             self.uids.str.slice(start=5)
-
-        self.uids = self.uids.str[:3]
+        gzd = self.uids.str[:3]
+        k100 = self.uids.str[3:5]
+        mid = 5 + int(len(self.uids.iloc[0][5:]) / 2)
+        coords = self.uids.str[5:mid] + self.delimiter + self.uids.str[mid:]
+        if not self.k100:
+            self.uids = coords
+        elif not self.gzd:
+            self.uids = k100 + self.delimiter + coords
+        else:
+            self.uids = gzd + self.delimiter + k100 + self.delimiter + coords
 
     def add_prefix(self):
 

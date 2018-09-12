@@ -70,6 +70,48 @@ class Grid:
         else:
             self.data[uid_column] = None
 
+    def get_prefix_column(self, prefix_column):
+
+        try:
+            prefixes = None
+            error_message = None
+            if self.input_datatype == 1:
+                prefixes, error_message = data.from_csv(self.input_datatype, prefix_column)
+            elif self.input_datatype == 2:
+                pass
+            else:
+                return prefixes
+            if error_message:
+                self.error(error_message)
+            else:
+                return prefixes
+        except (KeyError, ValueError):
+            self.error('Invalid column name')
+
+    def write_data(self, fname, column):
+
+        if self.input_datatype == 1:
+            setrefs.to_csv(fname, column, self.input_data, self.data)
+        elif self.input_datatype == 2:
+            setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
+        return setrefs.to_list(self.data, column)
+
+    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=1):
+
+        self.get_grid_refs(ref_column, precision)
+        return self.write_data(fname, ref_column)
+
+    def write_uids(self, fname=None, uid_column='UID_REFS', precision=1,
+                   prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
+
+        ref_column = 'GRID_REFS'
+        if prefix_column:
+            prefix_column = self.get_prefix_column(prefix_column)
+        self.get_grid_refs(ref_column, precision)
+        grid_refs = self.data[ref_column]
+        self.get_grid_assets(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
+        # return self.write_data(fname, uid_column)
+
     def set_columns(self):
 
         if isinstance(self.input_columns, (tuple, list)):
@@ -83,28 +125,6 @@ class Grid:
 
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
-
-    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=1):
-
-        self.get_grid_refs(ref_column, precision)
-        return self.write_data(fname, ref_column)
-
-    def write_uids(self, fname=None, uid_column='UID_REFS', precision=1,
-                   prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
-
-        ref_column = 'GRID_REFS'
-        self.get_grid_refs(ref_column, precision)
-        grid_refs = self.data[ref_column]
-        self.get_grid_assets(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
-        # return self.write_data(fname, uid_column)
-
-    def write_data(self, fname, column):
-
-        if self.input_datatype == 1:
-            setrefs.to_csv(fname, column, self.input_data, self.data)
-        elif self.input_datatype == 2:
-            setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
-        return setrefs.to_list(self.data, column)
 
 
 if __name__ == "__main__":
@@ -124,7 +144,7 @@ if __name__ == "__main__":
 
     g = Grid((-34.907587535813704, 50.58441270574641))
     # g_output = g.write_refs(precision=10)
-    g_output = g.write_uids(gzd=False, prefix='QT')
+    g_output = g.write_uids(gzd=False, prefix_column='QT', precision=100)
     print(g_output)
     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
     # h_output = h.write_refs()
