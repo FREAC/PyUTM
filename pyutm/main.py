@@ -41,7 +41,7 @@ class Grid:
                     self.data, self.error_message = data.from_csv(self.input_data, self.columns)
                 elif self.input_data.endswith('.shp'):
                     self.input_datatype = 2
-                    self.data, self.shape_type, self.error_message = data.from_shapefile(self.input_data)
+                    self.data, self.shape_type, self.error_message = data.from_shp(self.input_data)
                 else:
                     raise AttributeError
             except AttributeError:
@@ -66,7 +66,7 @@ class Grid:
     def get_grid_assets(self, grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter):
 
         if grid_refs.any():
-            self.data[uid_column] = locate.Assets(grid_refs, prefix, prefix_column, gzd, k100, delimiter)
+            self.data[uid_column] = locate.Assets(grid_refs, prefix, prefix_column, gzd, k100, delimiter).uids
         else:
             self.data[uid_column] = None
 
@@ -74,18 +74,17 @@ class Grid:
 
         try:
             prefixes = None
-            error_message = None
             if self.input_datatype == 1:
-                prefixes, error_message = data.from_csv(self.input_datatype, prefix_column)
+                prefixes, error_message = data.from_csv(self.input_data, prefix_column, prefix=True)
             elif self.input_datatype == 2:
-                pass
+                prefixes, shape_type, error_message = data.from_shp(self.input_data, prefix_column)
             else:
                 return prefixes
             if error_message:
                 self.error(error_message)
             else:
-                return prefixes
-        except (KeyError, ValueError):
+                return prefixes.iloc[:, 0]
+        except (KeyError, ValueError, AttributeError):
             self.error('Invalid column name')
 
     def write_data(self, fname, column):
@@ -144,7 +143,7 @@ if __name__ == "__main__":
 
     g = Grid((-34.907587535813704, 50.58441270574641))
     # g_output = g.write_refs(precision=10)
-    g_output = g.write_uids(gzd=False, prefix_column='QT', precision=100)
+    g_output = g.write_uids(gzd=False, precision=100)
     print(g_output)
     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
     # h_output = h.write_refs()
@@ -180,8 +179,8 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
     c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
     # csv_output = c.write_refs(fname=r'.\test.csv')
-    csv_output = c.write_uids(gzd=False)
-    print(csv_output)
+    csv_output = c.write_uids(gzd=False, prefix_column=['ADD_THESE'])
+    # print(csv_output)
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
@@ -205,7 +204,7 @@ if __name__ == "__main__":
 
     j = Grid('./tests/data/points.shp')
     # j_output = j.write_refs(r'test.shp')
-    j_output = j.write_uids()
+    j_output = j.write_uids(prefix_column=['ATTR'], precision=1000000)
     print(j_output)
 
     # x = Grid('./tests/data/points.shp', epsg=3086)

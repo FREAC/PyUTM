@@ -199,7 +199,7 @@ class Assets:
         print(self.uids)
 
     def set_base_uid(self):
-
+        # TODO fix if no coords are given
         gzd = self.uids.str[:3]
         k100 = self.uids.str[3:5]
         mid = 5 + int(len(self.uids.iloc[0][5:]) / 2)
@@ -213,10 +213,13 @@ class Assets:
 
     def add_prefix(self):
 
-        if self.prefix_column:
+        try:
+            if self.prefix_column is not None:
+                self.uids = self.prefix_column.str.cat(self.uids, self.delimiter)
+            elif self.prefix:
+                self.uids = '{}{}'.format(self.prefix, self.delimiter) + self.uids.astype(str)
+        except AttributeError:
             pass
-        elif self.prefix:
-            self.uids = '{}{}'.format(self.prefix, self.delimiter) + self.uids.astype(str)
 
     def add_uid(self):
 
