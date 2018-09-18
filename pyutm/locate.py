@@ -184,7 +184,6 @@ class Assets:
 
     def __init__(self, grid_refs, prefix, prefix_column, gzd, k100, delimiter):
 
-        self.grid_refs = grid_refs
         self.uids = grid_refs
         self.prefix = prefix
         self.prefix_column = prefix_column
@@ -199,17 +198,21 @@ class Assets:
         print(self.uids)
 
     def set_base_uid(self):
-        # TODO fix if no coords are given
+
         gzd = self.uids.str[:3]
         k100 = self.uids.str[3:5]
+        delimiter = self.delimiter
+        if self.uids.iloc[0][5:] == '':
+            delimiter = ''
         mid = 5 + int(len(self.uids.iloc[0][5:]) / 2)
-        coords = self.uids.str[5:mid] + self.delimiter + self.uids.str[mid:]
+        coords = self.uids.str[5:mid] + delimiter + self.uids.str[mid:]
+
         if not self.k100:
             self.uids = coords
         elif not self.gzd:
-            self.uids = k100 + self.delimiter + coords
+            self.uids = k100 + delimiter + coords
         else:
-            self.uids = gzd + self.delimiter + k100 + self.delimiter + coords
+            self.uids = gzd + delimiter + k100 + delimiter + coords
 
     def add_prefix(self):
 
@@ -223,4 +226,6 @@ class Assets:
 
     def add_uid(self):
 
-        pass
+        duplicate = self.uids.duplicated(keep=False)
+        unique_suffix = ['0'] * self.uids[-duplicate].size
+        self.uids[-duplicate] = self.uids[-duplicate].str.cat(unique_suffix, sep=self.delimiter)

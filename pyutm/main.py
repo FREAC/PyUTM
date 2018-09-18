@@ -130,8 +130,10 @@ if __name__ == "__main__":
 
     lonlats = [(-34.907587535813704, 50.58441270574641),
                (108.93083026662671, 32.38153601114477),
+               (108.930830266, 32.381536011),
                (-36.69218329018642, -45.06991972863084),
-               (43.97154480746007, -46.140677181254475)]
+               (43.97154480746007, -46.140677181254475),
+               (43.97154480, -46.140677181)]
 
     lonlats2 = [[(-34.907587535813704, 50.58441270574641), True, [1, 2], 1, 'a'],
                 [(108.93083026662671, 32.38153601114477), False, [3, 4], 2, 'b'],
@@ -144,21 +146,21 @@ if __name__ == "__main__":
     g = Grid((-34.907587535813704, 50.58441270574641))
     # g_output = g.write_refs(precision=10)
     g_output = g.write_uids(gzd=False, precision=100)
-    print(g_output)
+    # print(g_output)
     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
     # h_output = h.write_refs()
     h_output = h.write_uids(k100=False, prefix='pi')
-    print(h_output)
+    # print(h_output)
     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
     #           (9, (43.97154480746007, -46.140677181254475))], 1)
     i = Grid(lonlats)
     # i_output = i.write_refs()
     i_output = i.write_uids()
-    print(i_output)
+    # print(i_output)
     j = Grid(lonlats2)
     # j_output = j.write_refs()
     j_output = j.write_uids()
-    print(j_output)
+    # print(j_output)
 
 
     # g = Grid(lonlats3)
