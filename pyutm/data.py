@@ -7,9 +7,9 @@ def from_list(data):
     :param data: tuple or list, point coordinates in (X, Y) format
     :return: Pandas dataframe, error message
     """
+    dataframe = None
+    error = None
     try:
-        dataframe = None
-        error = None
         # Only import numpy for list inputs
         import numpy
         dataframe = pandas.DataFrame.from_records(numpy.array(data, ndmin=2))
@@ -28,9 +28,9 @@ def from_csv(data, columns, prefix=False):
     :param prefix: boolean, default=False, whether column parameter contains prefix values for the UID
     :return: Pandas dataframe, error message
     """
+    dataframe = None
+    error = None
     try:
-        dataframe = None
-        error = None
         dataframe = pandas.read_csv(data, usecols=columns, engine='c')
         # Select only the relevant columns from the dataframe
         dataframe = dataframe[list(columns)]
@@ -52,9 +52,10 @@ def from_shp(data, prefix_column=None):
     :param prefix_column: string, default=None, attribute column name containing prefix values for the UID
     :return: Pandas dataframe, integer specifying shape type of shapefile, error message
     """
+    dataframe = None
+    shape_type = None
+    error = None
     try:
-        dataframe = None
-        error = None
         # Only import shapefile for SHP file inputs
         import shapefile
         sf = shapefile.Reader(data)
