@@ -7,8 +7,8 @@ class Point:
         """
         Implements the methods for reporting a UTM or UPS grid location as described in the following document:
         http://earth-info.nga.mil/GandG/publications/NGA_STND_0037_2_0_0_GRIDS/NGA.STND.0037_2.0.0_GRIDS.pdf
-        :param longitude: float
-        :param latitude: float
+        :param longitude: float, longitude of point in decimal degrees
+        :param latitude: float, latitude of point in decimal degrees
         :param precision: int, default=1, desired precision of the grid reference
         """
         self.zone_number = None
@@ -17,23 +17,26 @@ class Point:
         self.grid_coords = None
         self.utm_e = None
         self.utm_n = None
-        self.grid_reference = self.get_grid_reference()
 
+        # Compute the zone information
         try:
             self.set_zone_number(longitude)
             self.set_zone_letter(latitude)
         except TypeError:
             pass
 
+        # Only continue if the zone information can be computed
         if self.zone_number and self.zone_letter:
             self.lonlat_to_utm(longitude, latitude)
             self.set_100k_id()
             self.set_grid_coords(precision)
 
+        self.grid_ref = self.get_grid_reference()
+
     def set_zone_number(self, longitude):
         """
         Determines the number of a point's grid zone designation using the logic in chapters 2 and 3.
-        :param longitude: float
+        :param longitude: float, longitude of point in decimal degrees
         """
         if -180 <= longitude <= 180:
             number = int(longitude / 6 + 31)
@@ -48,7 +51,7 @@ class Point:
     def set_zone_letter(self, latitude):
         """
         Determines the letter of a point's grid zone designation using the logic in chapters 2 and 3.
-        :param latitude: float
+        :param latitude: float, latitude of point in decimal degrees
         """
         if -80 <= latitude <= 84:
             letter = 'CDEFGHJKLMNPQRSTUVWX'
@@ -66,8 +69,8 @@ class Point:
     def lonlat_to_utm(self, longitude, latitude):
         """
         Converts a given latitude and longitude to its UTM coordinate value.
-        :param longitude: float
-        :param latitude: float
+        :param longitude: float, longitude of point in decimal degrees
+        :param latitude: float, latitude of point in decimal degrees
         """
         proj4 = '+proj=utm +zone={} +datum=WGS84 +units=m +no_defs'.format(self.zone_number)
         if self.zone_letter < 'N':
@@ -84,8 +87,8 @@ class Point:
             123,456.7 -> 100,000
             199,999.9 -> 100,000
             1,123,456.7 -> 1,100,000
-        :param number: float
-        :return: int
+        :param number: float, UTM coordinate
+        :return: int, simplified UTM coordinate
         """
         return int(number / 100000) * 100000
 
@@ -93,8 +96,8 @@ class Point:
     def reduce_by_2mill(number):
         """
         Removes multiples of 2,000,000 from the given coordinate until less than 2,000,000.
-        :param number: float
-        :return: int
+        :param number: float, UTM coordinate
+        :return: int, simplified UTM coordinate
         """
         while number >= 2000000:
             number -= 2000000
@@ -103,8 +106,8 @@ class Point:
     def set_100k_first_letter(self, reduced_e):
         """
         Determines the first letter of the 100,000 meter grid ID using the method described on page B-2.
-        :param reduced_e: int
-        :return: string
+        :param reduced_e: int, simplified UTM easting coordinate
+        :return: string, first letter of the 100k meter grid ID
         """
         letter = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
         set1 = range(1, 60, 3)
@@ -121,8 +124,8 @@ class Point:
     def set_100k_second_letter(self, reduced_n):
         """
         Determines the second letter of the 100,000 meter grid ID using the method described on page B-2.
-        :param reduced_n: int
-        :return: string
+        :param reduced_n: int, simplified UTM northing coordinate
+        :return: string, second letter of the 100k meter grid ID
         """
         if self.zone_number % 2 == 0:
             letter = 'FGHJKLMNPQRSTUVABCDE'
@@ -150,12 +153,12 @@ class Point:
         Examples:
             1 -> 1
             2 -> 10
-        :param precision: int
+        :param precision: int, desired precision of grid reference
         """
         utm_e = str(int(self.utm_e))
         utm_n = str(int(self.utm_n))
 
-        if precision == 1:
+        if precision <= 1:
             self.grid_coords = utm_e[-5:] + utm_n[-5:]
         elif precision <= 10:
             self.grid_coords = utm_e[-5:-1] + utm_n[-5:-1]
@@ -170,10 +173,85 @@ class Point:
 
     def get_grid_reference(self):
         """
-        Reports the grid reference for the given point using the specified level of precision.
-        :return: string
+        Reports the properly formatted grid reference for the given point.
+        :return: string, formatted grid reference
         """
         if self.zone_number and self.zone_letter:
             return '{:02}{}{}{}'.format(self.zone_number, self.zone_letter, self.k100_id, self.grid_coords)
         else:
             return None
+
+
+class UID:
+
+    def __init__(self, grid_refs, prefix, prefix_column, gzd, k100, delimiter):
+        """
+        Creates a Unique ID (UID) for each grid reference by modifying it
+        with a suffix, optional prefixes, and delimiters.
+        :param grid_refs: dataframe, grid references to be modified
+        :param prefix: string, characters added to beginning of UID
+        :param prefix_column: Pandas Series, characters added to beginning of UID
+        :param gzd: boolean, whether the Grid Zone Designation should be included in the UID
+        :param k100: boolean, whether the 100k meter grid reference should be included in the UID
+        :param delimiter: string, delimiter of the UID
+        """
+        self.uids = grid_refs
+        self.prefix = prefix
+        self.prefix_column = prefix_column
+        self.gzd = gzd
+        self.k100 = k100
+        self.delimiter = delimiter
+
+        self.set_base_uid()
+        self.set_prefix()
+        self.set_uid()
+
+    def set_base_uid(self):
+        """
+        Creates the base UID for each grid reference to which prefixes and suffixes will be added.
+        """
+        gzd = self.uids.str[:3]
+        k100 = self.uids.str[3:5]
+        delimiter = self.delimiter
+        # If no coords, use an empty delimiter
+        sample_coord = self.uids.iloc[0][5:]
+        if sample_coord == '':
+            delimiter = ''
+        # Divide the coords
+        mid = 5 + int(len(sample_coord) / 2)
+        coords = self.uids.str[5:mid] + delimiter + self.uids.str[mid:]
+
+        if not self.k100:
+            self.uids = coords
+        elif not self.gzd:
+            self.uids = k100 + delimiter + coords
+        else:
+            self.uids = gzd + self.delimiter + k100 + delimiter + coords
+
+    def set_prefix(self):
+        """
+        Adds a prefix to the base UID if provided. If a prefix column is specified, the prefix parameter is not used.
+        """
+        try:
+            if self.prefix_column is not None:
+                self.uids = self.prefix_column.str.cat(self.uids, self.delimiter)
+            elif self.prefix:
+                self.uids = '{}{}'.format(self.prefix, self.delimiter) + self.uids.astype(str)
+        except AttributeError:
+            pass
+
+    def set_uid(self):
+        """
+        Adds a unique number (0, 1, 2, ...) to the base UID.
+        """
+        duplicate = self.uids.duplicated(keep=False)
+        # TODO Changing this to '1' could act as a more natural count of the unique grid references
+        unique_suffix = ['0'] * self.uids[-duplicate].size
+        self.uids[-duplicate] = self.uids[-duplicate].str.cat(unique_suffix, sep=self.delimiter)
+
+        # TODO Fix: this is SLOW
+        duplicate_uids = set(self.uids[duplicate])
+        for uid in duplicate_uids:
+            df = self.uids[self.uids == uid]
+            unique_suffixes = [str(suffix) for suffix in range(df.size)]
+            self.uids[self.uids == uid] = df.str.cat(unique_suffixes, sep=self.delimiter)
