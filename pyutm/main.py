@@ -1,5 +1,3 @@
-import sys
-
 import pyproj
 
 import data
@@ -8,107 +6,202 @@ import setrefs
 
 
 class Grid:
-
+    """
+    This class serves as the API for pyutm, with two main public methods: write_refs() and write_uids().
+    """
     def __init__(self, data, columns=None, epsg=4326):
+        """
+        Validates, loads and optionally transforms the input data. Assumes coordinates are in EPSG:4326.
+        :param data: list or string, data or file path to data
+        :param columns: tuple or list of length 2, default=None, column names containing X and Y coordinates,
+        in that order
+        :param epsg: int, default=4326, European Petroleum Survey Group number for the input coordinate system
+        """
+        self._input_data = data
+        self._input_columns = columns
+        self._input_datatype = None
+        self._shape_type = None
+        self._data = None
+        self._columns = None
+        self._epsg = epsg
+        self._error_message = None
 
-        self.input_data = data
-        self.input_columns = columns
-        self.input_datatype = None
-        self.shape_type = None
-        self.data = None
-        self.columns = None
-        self.epsg = epsg
-        self.error_message = None
-        self.grid_references = []
+        # Load data
+        self._set_columns()
+        self._set_data()
+        # Transform coordinates to EPSG 4326, if necessary
+        if self._epsg != 4326:
+            self._transform_coords()
 
-        self.set_columns()
-        self.set_data()
+        if self._error_message:
+            self._error(self._error_message)
 
-        if self.epsg != 4326:
-            self.transform_coords()
-        if self.error_message:
-            self.error(self.error_message)
+    def _set_columns(self):
+        """
+        Validates the columns parameter: only tuples and lists of length 2 are considered valid.
+        An invalid columns parameter defaults to None.
+        """
+        if isinstance(self._input_columns, (tuple, list)):
+            if len(self._input_columns) == 2:
+                self._columns = tuple(self._input_columns)
+            else:
+                self._columns = None
 
-    def set_data(self):
-
-        if isinstance(self.input_data, (tuple, list)) and (len(self.input_data) > 1):
-            self.input_datatype = 0
-            self.data, self.error_message = data.from_list(self.input_data)
+    def _set_data(self):
+        """
+        Loads the data based on type. 0: tuple or list, 1: CSV, or 2: SHP file.
+        """
+        # Tuples or lists must contain at least two elements
+        if isinstance(self._input_data, (tuple, list)) and (len(self._input_data) > 1):
+            self._input_datatype = 0
+            self._data, self._error_message = data.from_list(self._input_data)
         else:
             try:
-                if self.input_data.endswith('.csv') and self.columns:
-                    self.input_datatype = 1
-                    self.data, self.error_message = data.from_csv(self.input_data, self.columns)
-                elif self.input_data.endswith('.shp'):
-                    self.input_datatype = 2
-                    self.data, self.shape_type, self.error_message = data.from_shapefile(self.input_data)
+                if self._input_data.endswith('.csv') and self._columns:
+                    self._input_datatype = 1
+                    self._data, self._error_message = data.from_csv(self._input_data, self._columns)
+                elif self._input_data.endswith('.shp'):
+                    self._input_datatype = 2
+                    self._data, self._shape_type, self._error_message = data.from_shp(self._input_data)
+                # Everything else raises an error
                 else:
                     raise AttributeError
             except AttributeError:
-                self.error_message = 'Invalid parameter(s): Grid(data={}, columns={}, epsg={})'.format(
-                    repr(self.input_data), repr(self.input_columns), self.epsg)
+                self._error_message = 'Invalid parameter(s): Grid(data={}, columns={}, epsg={})'.format(
+                    repr(self._input_data), repr(self._input_columns), self._epsg)
 
-    def transform_coords(self):
-
+    def _transform_coords(self):
+        """
+        Reprojects coordinates into longitude and latitude.
+        """
         try:
-            p = pyproj.Proj(init='epsg:{}'.format(self.epsg))
-            self.data[0], self.data[1] = p(self.data[0].values, self.data[1].values, inverse=True)
+            p = pyproj.Proj(init='epsg:{}'.format(self._epsg))
+            self._data[0], self._data[1] = p(self._data[0].values, self._data[1].values, inverse=True)
         except RuntimeError:
-            self.error_message = 'EPSG:{} not found'.format(self.epsg)
+            self._error_message = 'EPSG:{} not found'.format(self._epsg)
 
-    def get_grid_refs(self, column, precision):
-
+    def _get_grid_refs(self, column, precision):
+        """
+        Uses the locate module class to compute a grid reference for every value in the input data.
+        :param column: string, column name for grid references
+        :param precision: int, desired precision of grid references
+        """
         try:
-            self.data[column] = [locate.Point(coord[0], coord[1], precision).get_grid_reference()
-                                 for coord in self.data.values]
+            self._data[column] = [locate.Point(coord[0], coord[1], precision).grid_ref for coord in self._data.values]
         except (KeyError, ValueError):
-            self.error('Invalid column name')
+            self._error('Invalid column name')
 
-    def get_grid_assets(self, ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter):
+    def _get_uids(self, grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter):
+        """
+        Uses the locate module to compute a Unique ID (UID) for every value in the input data.
+        :param grid_refs: dataframe, grid references to be modified
+        :param uid_column: string, column name for UIDs
+        :param prefix: string, characters added to beginning of UID
+        :param prefix_column: Pandas Series, characters added to beginning of UID
+        :param gzd: whether the Grid Zone Designation should be included in the UID
+        :param k100: boolean, whether the 100k meter grid reference should be included in the UID
+        :param delimiter: string
+        """
+        if grid_refs.any():
+            self._data[uid_column] = locate.UID(grid_refs, prefix, prefix_column, gzd, k100, delimiter).uids
+        else:
+            self._data[uid_column] = None
 
-        self.data[asset_column] = locate.Assets(ref_column, precision, prefix, prefix_column, gzd, k100, delimiter)
-
-    def set_columns(self):
-
-        if isinstance(self.input_columns, (tuple, list)):
-            if len(self.input_columns) == 2:
-                self.columns = tuple(self.input_columns)
+    def _get_prefix_column(self, prefix_column):
+        """
+        Uses the data module to retrieve prefix values if stored in the original data file.
+        :param prefix_column: string or list, column name containing prefix values for the UID
+        """
+        try:
+            prefixes = None
+            # If input was a string, wrap it in a list
+            if isinstance(prefix_column, str):
+                prefix_column = [prefix_column]
+            # Get column data from the original data files
+            if self._input_datatype == 1:
+                prefixes, error_message = data.from_csv(self._input_data, prefix_column, prefix=True)
+            elif self._input_datatype == 2:
+                prefixes, shape_type, error_message = data.from_shp(self._input_data, prefix_column)
             else:
-                self.columns = None
+                return prefixes
+            # Call the error function directly if something went wrong
+            if error_message:
+                self._error(error_message)
+            else:
+                return prefixes.iloc[:, 0]
+        except (KeyError, ValueError, AttributeError):
+            self._error('Invalid column name')
 
-    @staticmethod
-    def error(message):
-
-        print('Error creating Grid object: {}'.format(message))
-        sys.exit(1)
+    def _write_data(self, fname, column):
+        """
+        Uses the setrefs module to write data to a list or file, based on the data type.
+        Always returns a nested list of the computed data.
+        :param fname: string, file name of the output data
+        :param column: string, column name containing the grid reference or UID
+        :return: list, nested list in [X, Y, grid reference or UID] format
+        """
+        if self._input_datatype == 1:
+            setrefs.to_csv(fname, column, self._input_data, self._data)
+        elif self._input_datatype == 2:
+            setrefs.to_shp(fname, column, self._input_data, self._data, self._shape_type)
+        return setrefs.to_list(self._data, column)
 
     def write_refs(self, fname=None, ref_column='GRID_REFS', precision=1):
+        """
+        Gets the grid references for a set of points and writes them to the specified file.
+        :param fname: string, default=None, file name of the output data
+        :param ref_column: string, default='GRID_REFS', column name containing the grid references
+        :param precision: int, default=1, desired precision of grid reference
+        :return: list, nested list in [X, Y, grid reference] format
+        """
+        self._get_grid_refs(ref_column, precision)
+        return self._write_data(fname, ref_column)
 
-        self.get_grid_refs(ref_column, precision)
-        return self.write_data(fname, ref_column)
+    def write_uids(self, fname=None, uid_column='UID_REFS', precision=1,
+                   prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
+        """
+        Gets the Unique IDs (UID) for a set of points and writes them to the specified file.
+        :param fname: string, default=None, file name of the output data
+        :param uid_column: string, default='UID_REFS', column name containing the UIDs
+        :param precision: int, default=1, desired precision of UID
+        :param prefix: string, default=None, characters added to beginning of UID
+        :param prefix_column: Pandas Series, default=None, characters added to beginning of UID
+        :param gzd: boolean, default=True, whether the Grid Zone Designation should be included in the UID
+        :param k100: boolean, default=True, whether the 100k meter grid reference should be included in the UID
+        :param delimiter: string, default='-', delimiter of the UID
+        :return: list, nested list in [X, Y, UID] format
+        """
+        ref_column = 'GRID_REFS'
+        if prefix_column:
+            prefix_column = self._get_prefix_column(prefix_column)
+        self._get_grid_refs(ref_column, precision)
+        # Select only the relevant column from the dataframe
+        grid_refs = self._data[ref_column]
+        self._get_uids(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
+        return self._write_data(fname, uid_column)
 
-    def write_assets(self, fname=None, asset_column='ASSET_REFS', ref_column='GRID_REFS', precision=1,
-                     prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
-
-        self.get_grid_refs(ref_column, precision)
-        self.get_grid_assets(ref_column, precision, asset_column, prefix, prefix_column, gzd, k100, delimiter)
-        return self.write_data(fname, asset_column)
-
-    def write_data(self, fname, column):
-
-        if self.input_datatype == 1:
-            setrefs.to_csv(fname, column, self.input_data, self.data)
-        elif self.input_datatype == 2:
-            setrefs.to_shp(fname, column, self.input_data, self.data, self.shape_type)
-        return setrefs.to_list(self.data, column)
+    @staticmethod
+    def _error(message):
+        """
+        Prints an error message then exits the script with an exit status of 1.
+        :param message: string, error message to print
+        """
+        # Only import sys for errors
+        import sys
+        print('Error creating Grid object: {}'.format(message))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
 
     lonlats = [(-34.907587535813704, 50.58441270574641),
                (108.93083026662671, 32.38153601114477),
+               (43.971544802, -46.1406771812),
+               (108.930830266, 32.381536011),
                (-36.69218329018642, -45.06991972863084),
-               (43.97154480746007, -46.140677181254475)]
+               (43.97154480746007, -46.140677181254475),
+               (43.97154480, -46.140677181),
+               (43.971544803, -46.1406771813)]
 
     lonlats2 = [[(-34.907587535813704, 50.58441270574641), True, [1, 2], 1, 'a'],
                 [(108.93083026662671, 32.38153601114477), False, [3, 4], 2, 'b'],
@@ -118,21 +211,25 @@ if __name__ == "__main__":
     lonlats3 = [((-34.907587535813704, 50.58441270574641), 1), ((108.93083026662671, 32.38153601114477), 2),
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
-    g = Grid((-34.907587535813704, 50.58441270574641))
-    g_output = g.write_refs(precision=10)
-    print(g_output)
-    h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
-    h_output = h.write_refs()
-    print(h_output)
-    # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
-    #           (9, (43.97154480746007, -46.140677181254475))], 1)
-    i = Grid(lonlats)
-    i_output = i.write_refs()
-    print(i_output)
-    j = Grid(lonlats2)
-    j_output = j.write_refs()
-    print(j_output)
-
+# TODO write tests!!!
+#     g = Grid((-34.907587535813704, 50.58441270574641))
+    # # g_output = g.write_refs(precision=10)
+    # g_output = g.write_uids(gzd=False, precision=10)
+    # print(g_output)
+    # h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+    # # h_output = h.write_refs()
+    # h_output = h.write_uids(k100=False, prefix='pi')
+    # # print(h_output)
+    # # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
+    # #           (9, (43.97154480746007, -46.140677181254475))], 1)
+    # i = Grid(lonlats)
+    # # i_output = i.write_refs()
+    # i_output = i.write_uids()
+    # # print(i_output)
+    # j = Grid(lonlats2)
+    # # j_output = j.write_refs()
+    # j_output = j.write_uids()
+    # print(j_output)
 
     # g = Grid(lonlats3)
     # #
@@ -150,9 +247,10 @@ if __name__ == "__main__":
     #
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
-    c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = c.write_refs(fname=r'.\test.csv')
-    print(csv_output)
+    # c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    # csv_output = c.write_refs(fname=r'.\test.csv')
+    # csv_output = c.write_uids(gzd=False, prefix_column='ADD_THESE')
+    # print(csv_output)
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
@@ -174,9 +272,10 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv')")
     # g = Grid('./tests/data/points.csv')
 
-    j = Grid('./tests/data/points.shp')
-    j_output = j.write_refs(r'test.shp')
-    print(j_output)
+    # j = Grid('./tests/data/points.shp')
+    # j_output = j.write_refs(r'test.shp')
+    # j_output = j.write_uids(prefix_column='ATTR')
+    # print(j_output)
 
     # x = Grid('./tests/data/points.shp', epsg=3086)
     # x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
@@ -191,7 +290,8 @@ if __name__ == "__main__":
     #
     # start = time.time()
     # c = Grid('./tests/data/chicago_crimes_2016.csv', ('Longitude', 'Latitude'))
-    # test3 = c.write_references()
+    # test3 = c.write_refs(r'ref2016.csv')
+    # test3 = c.write_uids(r'uid2016.csv')
     # print(test3)
     # print(time.time() - start)
 
