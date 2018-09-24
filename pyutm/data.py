@@ -1,6 +1,7 @@
 import os
 
 import pandas
+import shapefile
 
 
 def from_list(data):
@@ -57,8 +58,6 @@ def from_shp(data, prefix_column=None):
     dataframe = None
     shape_type = None
     error = None
-    # Only import shapefile for SHP file inputs
-    import shapefile
     try:
         sf = shapefile.Reader(data)
         shape_type = sf.shapes()[0].shapeType
@@ -97,8 +96,6 @@ def to_csv(fname, column, input_data, dataframe):
     :param input_data: string, path to original CSV file
     :param dataframe: Pandas dataframe, data to be written
     """
-    # Only import pandas for CSV outputs
-    import pandas
     fname = set_fname(fname, input_data)
     # Add the grid reference or UID to the existing CSV
     output_df = pandas.read_csv(input_data)
@@ -116,8 +113,6 @@ def to_shp(fname, column, input_data, dataframe, shape_type):
     :param shape_type: int, shape type as defined on page 4 of
     http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
     """
-    # Only import shapefile for SHP outputs
-    import shapefile
     fname = set_fname(fname, input_data)
     r = shapefile.Reader(input_data)
     w = shapefile.Writer(shape_type)
