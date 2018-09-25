@@ -20,6 +20,8 @@ of the 100km square. The first set of digits describes the location's distance e
 (its *Northing*). The number of digits used in a set determines the number of meters that the digits
 represent: as the number of digits increases, so does the precision with which a location can be established. 
 
+<center>
+
 Number of Digits | Number of Meters | Location Precision
 :---: | :---: | :---:
 One | 10 000 | Local Area
@@ -28,6 +30,7 @@ Three | 100 | Football Field
 Four | 10 | House
 Five | 1 | Bath towel
 
+</center>
 
 
 ## Installation
