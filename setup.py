@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.1",
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
-    description="Computes UTM grid references or unique IDs based on UTM grid references for point data.",
+    description="Creates UTM (and UPS) grid references and unique identifiers for point data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/FREAC/pyutm",
