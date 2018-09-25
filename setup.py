@@ -22,6 +22,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'pandas',
-        'pyshp'
-    ]
+        'pyshp>=2'
+    ],
+    python_requires='>=2.7, >=3'
 )

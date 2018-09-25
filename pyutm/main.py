@@ -145,24 +145,28 @@ class Grid:
             data.to_shp(fname, column, self._input_data, self._data, self._shape_type)
         return data.to_list(self._data, column)
 
-    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=1):
+    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=10):
         """
-        Gets the grid references for a set of points and writes them to the specified file.
+        Gets the grid references for a set of points and writes them to the specified file,
+        then returns a nested list of the coordinates and their grid reference.
+        If no file name is given, returns a nested list without writing to a file.
         :param fname: string, default=None, file name of the output data
         :param ref_column: string, default='GRID_REFS', column name containing the grid references
-        :param precision: int, default=1, desired precision of grid reference
+        :param precision: int, default=10, desired precision of grid reference
         :return: list, nested list in [X, Y, grid reference] format
         """
         self._get_grid_refs(ref_column, precision)
         return self._write_data(fname, ref_column)
 
-    def write_uids(self, fname=None, uid_column='UID_REFS', precision=1,
+    def write_uids(self, fname=None, uid_column='UID_REFS', precision=10,
                    prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
         """
-        Gets the Unique IDs (UID) for a set of points and writes them to the specified file.
+        Gets the Unique IDs (UID) for a set of points and writes them to the specified file,
+        then returns a nested list of the coordinates and their UID.
+        If no file name is given, returns a nested list without writing to a file.
         :param fname: string, default=None, file name of the output data
         :param uid_column: string, default='UID_REFS', column name containing the UIDs
-        :param precision: int, default=1, desired precision of UID
+        :param precision: int, default=10, desired precision of UID
         :param prefix: string, default=None, characters added to beginning of UID
         :param prefix_column: Pandas Series, default=None, characters added to beginning of UID
         :param gzd: boolean, default=True, whether the Grid Zone Designation should be included in the UID
@@ -247,7 +251,7 @@ if __name__ == "__main__":
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
     c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = c.write_refs(fname=r'.\test.csv')
+    csv_output = c.write_refs()
     # csv_output = c.write_uids(gzd=False, prefix_column='ADD_THESE')
     print(csv_output)
 
