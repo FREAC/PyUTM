@@ -234,6 +234,9 @@ if __name__ == "__main__":
     j_output = j.write_uids()
     print(j_output)
 
+    g = Grid((16.767984, -3.012058))
+    print(g.write_refs())
+
     # g = Grid(lonlats3)
     # #
     # print()
