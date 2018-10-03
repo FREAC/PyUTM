@@ -237,7 +237,7 @@ if __name__ == "__main__":
     g = Grid((16.767984, -3.012058))
     print(g.write_refs())
 
-    g = Grid((-84.290198, 30.438503))
+    g = Grid((-176.290198, 30.438503))
     print(g.write_refs(precision=100))
 
     # g = Grid(lonlats3)
