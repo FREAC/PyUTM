@@ -62,9 +62,10 @@ Five | 1 | Bath towel
 
 ### What is a unique identifier?
 
-A unique identifier (UID) modifies a point's grid reference by adding descriptive prefixes and suffixes to insure that
-each point's reference is unique. It can also remove character sets from the grid reference to make a UID shorter,
-as well as separate character sets by a delimiter to improve readability.   
+A unique identifier (UID) modifies a point's grid reference by adding a suffix in order to insure that each reference-based ID
+within the dataset is unique, even when two points may share the same grid reference.
+It can add prefixes to the reference to make the UID more meaningful or remove character sets from the standard grid
+reference to make a UID shorter; it also adds a delimiter between the character sets to improve readability.
 
 ### Examples
 
