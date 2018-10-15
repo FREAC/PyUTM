@@ -3,12 +3,14 @@
 PyUTM is a Python package that creates standardized grid references for point data.
 It can also use those grid references to create spatially meaningful unique identifiers for tasks such as asset naming.
 
-Grid references can be created in US National Grid, MGRS and UTM formats.
+Grid references can be created in the following formats:
+- US National Grid (USNG)
+- Military Grid Reference System (MGRS)
+- Universal Transverse Mercator (UTM) (*in progress*)
 
-To install PyUTM, use PyPI:[*](#nb)
-```
-pip install pyutm
-```
+For a discussion regarding the benefits of using the US National Grid, see this awesome document.
+
+## Table of Contents
 
 [What is a grid reference?](#what-is-a-grid-reference)
 
@@ -32,22 +34,22 @@ decreases as characters are removed.
 The **first set** of characters in a grid reference describes its **Grid Zone Designation** (GZD).
 - This can be either two or three characters long and is comprised of a number between 1 and 60 followed by a letter
 (*e.g.* **33M**). By default, PyUTM adds a leading zero to numbers less than 10 (*e.g.* **02U**).
-- The letters 'I' and 'O' are omitted to avoid confusion with the numbers '1' and '0'.
 - With some exceptions in the northern latitudes and at the poles, the GZD describes a standard area encompassing
 6° of longitude and 8° of latitude.
+- The letters 'I' and 'O' are omitted to avoid confusion with the numbers '1' and '0'.
 
 The **second set** of characters in a grid reference describes its **100 kilometer square** within the GZD.
 - This is always two characters long and is comprised of two letters, again omitting 'I' and 'O' (*e.g.* **XS**).
- - Though the majority of squares within a GZD are 100 km on each side, those located on the edges of the GZD can be
+- Though the majority of squares within a GZD are 100 km on each side, those located on the edges of the GZD can be
 smaller in area, due to the [conformal nature of the projections](https://en.wikipedia.org/wiki/Conformal_map_projection)
 from which the grid references are derived.
 
 The **third and fourth sets** of characters in a grid reference describe its distance in meters from the lower left
-corner of the 100 km square. The third set of characters describes **the location's distance east** of the lower left corner (its *easting*),
-while the fourth set of characters describes **the location's distance north** of the lower left corner (its *northing*).
+corner of the 100 km square. The third set of characters describes the **location's distance east** of the lower left corner (its *easting*),
+while the fourth set of characters describes the **location's distance north** of the lower left corner (its *northing*).
 - Both sets can be between zero and five characters long and are comprised entirely of digits; they must have the same
-number of characters and are not separated by a space (*e.g.* **96496691**).
-  - 96496691 represents a location of 9649 easting and 6691 northing.
+number of characters and are not separated by a space (*e.g.* **97396762**).
+  - 97396762 represents a location of 9739 easting and 6762 northing.
 - The number of digits used in each set determines the number of meters that those digits represent. As the number of
 digits increases from zero to five, so does the precision with which a location can be established within the 100 km square:
 
@@ -62,27 +64,88 @@ Five | 1 | Bath towel
 
 ### What is a unique identifier?
 
-A unique identifier (UID) modifies a point's grid reference by adding a suffix in order to insure that each reference-based ID
-within the dataset is unique, even when two points may share the same grid reference.
+A unique identifier (UID) modifies a point's grid reference by adding a numeric suffix to insure that **each reference-based ID
+within the dataset is unique**, even when two points may share the same grid reference.
 It can add prefixes to the reference to make the UID more meaningful or remove character sets from the standard grid
 reference to make a UID shorter; it also adds a delimiter between the character sets to improve readability.
+  - **M-XS-9739-6762-3** is a UID containing both a custom prefix and numeric suffix;
+the GZD has not been used and delimiters have been added to separate the character sets.
 
-### Examples
+## Examples
 
-PyUTM will create grid references and unique identifiers for point data supplied as a list, CSV file or Shapefile.
-Here's how.
+To install PyUTM, use PyPI:[*](#nb)
+```
+pip install pyutm
+```
+To use PyUTM:
+1. Create a Grid object with `pyutm.Grid()`
+2. Call `write_refs()` to create standardized grid **ref**erences, or
+3. Call `write_uids()` to create **u**nique **id**entifiers
+
+### Methods
+
+The PyUTM Grid object has two methods:
+
+# TODO include code for the grid object
+
+`write_refs(fname=None, ref_column='GRID_REFS', precision=10)`
+- `fname`: the name of the file to which the grid references will be written
+- `ref_column`: the header of the column in which the grid references will be written
+  - default column name is **GRID_REFS** 
+- `precision`: the desired precision of the grid references, in meters
+  - default precision is **10 meters**
+
+`write_uids(fname=None, uid_column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-')`
+- `fname`: the name of the file to which the UIDs will be written
+- `uid_column`: the header of the column in which the UIDs will be written
+  - default column name is **UID_REFS** 
+- `precision`: the desired precision of the grid references, in meters
+  - default precision is **10 meters**
+- `prefix`: the prefix to be added to all UIDs
+- `prefix_column`: the name of the data column containing prefix characters
+- `gzd`: whether to include the Grid Zone Designation in the UIDs
+- `k100`: whether to include the 100 kilometer square in the UIDs
+- `delimiter`: the character(s) used to separate the character sets  
+
+### How to use PyUTM with...
 
 #### Lists
 ```python
-
+# Coordinates should be in (longitude, latitude) format
+>>> lon_lat = (16.776031, -3.005612)
+>>> my_grid = pyutm.Grid(lon_lat)
+# Create standardized grid references
+>>> my_ref = my_grid.write_refs()
+>>> my_ref
+[[16.776031, -3.005612, '33MXS97386762']]
+# To specify the precision of the grid reference, specify the parameter
+>>> my_1m_ref = my_grid.write_refs(precision=1)
+>>> my_1m_ref
+[[16.776031, -3.005612, '33MXS9738967626']]
+# Create a unique identifier
+>>> my_uid = my_grid.write_uids()
+>>> my_uid
+[[16.776031, -3.005612, '33M-XS-9738-6762-0']]
+# Add multiple coordinates to a new grid 
+>>> lon_lats = [(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)]
+>>> my_grid = pyutm.Grid(lon_lats)
+# Modify the unique identifier
+>>> my_1km_refs = my_grid.write_refs(prefix='T', gzd=False, precision=1000)
+>>> my_1km_refs
+[[16.776031, -3.005612, 'T-XS-97-67-0'], [16.772291, -3.007136, 'T-XS-96-67-0'], [16.771549, -3.010145, 'T-XS-96-67-1']]
 ```
 
 #### CSVs
 
 #### Shapefiles
 
+#### N.B.
 
-### References
+*Python 2.7 users must install the
+[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
+before using this package.*
+
+## References
 
 National Geospatial-Intelligence Agency, *The Universal Grids and the Transverse Mercator and Polar Stereographic Map Projections*,
 [NGA Standardization Document NGA.SIG.0012_2.0.0_UTMUPS](http://earth-info.nga.mil/GandG/publications/NGA_SIG_0012_2_0_0_UTMUPS/NGA.SIG.0012_2.0.0_UTMUPS.pdf).
@@ -92,10 +155,4 @@ Washington, D.C.: Office of Geomatics, 2014.
 National Geospatial-Intelligence Agency, *Universal Grids and Grid Reference Systems*,
 [NGA Standardization Document NGA.STND.0037_2.0.0_GRIDS](http://earth-info.nga.mil/GandG/publications/NGA_STND_0037_2_0_0_GRIDS/NGA.STND.0037_2.0.0_GRIDS.pdf).
 Washington, D.C.: Office of Geomatics, 2014.
-- Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful. 
-
-#### N.B.
-
-*Python 2.7 users must install the
-[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-before using this package.*
+- Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful.

@@ -234,11 +234,15 @@ if __name__ == "__main__":
     j_output = j.write_uids()
     print(j_output)
 
-    g = Grid((16.767984, -3.012058))
-    print(g.write_refs())
+    g = Grid((16.776031, -3.005612))
+    print(g.write_refs(precision=1))
 
     g = Grid((-176.290198, 30.438503))
     print(g.write_refs(precision=100))
+
+    g = Grid([(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)])
+    print('T:', g.write_uids(prefix='M', gzd=False, precision=1000))
+    print('T:', g.write_refs())
 
     # g = Grid(lonlats3)
     # #
