@@ -78,7 +78,7 @@ To install PyUTM, use PyPI:[*](#nb)
 pip install pyutm
 ```
 
-### 1. Create a Grid object
+### 1. Create a `Grid()` object
 
 `Grid(data, columns=None, epsg=4326)`
 
