@@ -18,10 +18,9 @@ For a discussion regarding the benefits of using the US National Grid, see this 
 
 [Examples](#examples)
 
-# TODO Fix this
-- [Lists](#lists)
-- [CSVs](#csvs)
-- [Shapefiles](#shapefiles)
+- [Create a Grid object](#1-create-a-grid-object)
+- [Call the write_refs() method](#2-call-the-write_refs-method)
+- [Call the write_uids() method](#3-call-the-write_uids-method)
 
 [References](#references)
 
@@ -79,9 +78,7 @@ To install PyUTM, use PyPI:[*](#nb)
 pip install pyutm
 ```
 
-###To use PyUTM:
-
-##### 1. Create a Grid object
+### 1. Create a Grid object
 
 `Grid(data, columns=None, epsg=4326)`
 
@@ -104,7 +101,7 @@ pip install pyutm
 >>> grid_from_shp = pyutm.Grid('my_points.shp', epsg=3857)
 ```
 
-##### 2. Call the `write_refs()` function
+### 2. Call the `write_refs()` method
 
 If a file name is specified, this function writes the grid **ref**erence of each point to the file.
 If the input data is in the CSV or shapefile format, the grid references are added as a new column to the file.
@@ -140,7 +137,7 @@ The function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`
 >>> grid_from_shp.write_refs('my_refs.shp', precision=10000)
 ```
 
-##### 3. Call the `write_uids()` function
+### 3. Call the `write_uids()` method
 
 If a file name is specified, this function writes the **u**nique **id**entifiers of each point to the file.
 If the input data is in the CSV or shapefile format, the UIDs are added as a new column to the file.
