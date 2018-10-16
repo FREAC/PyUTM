@@ -18,6 +18,7 @@ For a discussion regarding the benefits of using the US National Grid, see this 
 
 [Examples](#examples)
 
+# TODO Fix this
 - [Lists](#lists)
 - [CSVs](#csvs)
 - [Shapefiles](#shapefiles)
@@ -49,7 +50,7 @@ corner of the 100 km square. The third set of characters describes the **locatio
 while the fourth set of characters describes the **location's distance north** of the lower left corner (its *northing*).
 - Both sets can be between zero and five characters long and are comprised entirely of digits; they must have the same
 number of characters and are not separated by a space (*e.g.* **97396762**).
-  - 97396762 represents a location of 9739 easting and 6762 northing.
+  - **97396762** represents a location of 9739 easting and 6762 northing.
 - The number of digits used in each set determines the number of meters that those digits represent. As the number of
 digits increases from zero to five, so does the precision with which a location can be established within the 100 km square:
 
@@ -77,25 +78,76 @@ To install PyUTM, use PyPI:[*](#nb)
 ```
 pip install pyutm
 ```
-To use PyUTM:
-1. Create a Grid object with `pyutm.Grid()`
-2. Call `write_refs()` to create standardized grid **ref**erences, or
-3. Call `write_uids()` to create **u**nique **id**entifiers
 
-### Methods
+###To use PyUTM:
 
-The PyUTM Grid object has two methods:
+##### 1. Create a Grid object
 
-# TODO include code for the grid object
+`Grid(data, columns=None, epsg=4326)`
+
+- `data`: the point data used to construct the grid references and UIDs
+  - The data can be either a list of coordinates or a file path to a CSV or shapefile
+  - Lists should be in the following format: `[(X coordinate, Y coordinate), ...]`
+- `columns`: if the data is in CSV format, these are the columns that hold the coordinates
+  - The argument should be passed in the following format: `[X coordinate, Y coordinate]`
+- `epsg`: the EPSG number of the data's coordinate reference system
+  - The default EPSG is **4326** (WGS 84)
+ 
+ ```python
+>>> import pyutm
+# Create a grid object from a list of longitudes and latitudes
+>>> lonlat = [(16.776031, -3.005612), (16.772291, -3.007136)]
+>>> grid_from_list = pyutm.Grid(lonlat)
+# Create a grid object from a CSV file
+>>> grid_from_csv = pyutm.Grid('my_points.csv', columns=['LON', 'LAT'])
+# Create a grid object from a shapefile in WGS 84 Web Mercator (Auxiliary Sphere)
+>>> grid_from_shp = pyutm.Grid('my_points.shp', epsg=3857)
+```
+
+##### 2. Call the `write_refs()` function
+
+If a file name is specified, this function writes the grid **ref**erence of each point to the file.
+If the input data is in the CSV or shapefile format, the grid references are added as a new column to the file.
+The function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`.
 
 `write_refs(fname=None, ref_column='GRID_REFS', precision=10)`
-- `fname`: the name of the file to which the grid references will be written
-- `ref_column`: the header of the column in which the grid references will be written
-  - default column name is **GRID_REFS** 
+
+- `fname` *(optional)*: the name of the file to which the grid references are written
+  - The output file must be in the same format as the input data
+- `ref_column`: the header of the column to which the grid references are written
+  - The default column name is **GRID_REFS** 
 - `precision`: the desired precision of the grid references, in meters
-  - default precision is **10 meters**
+  - The default precision is **10 meters**
+
+```python
+>>> lon_lat = (16.776031, -3.005612)
+>>> my_grid = pyutm.Grid(lon_lat)
+# Create grid references
+>>> my_ref = my_grid.write_refs()
+>>> my_ref
+[[16.776031, -3.005612, '33MXS97386762']]
+# Specify the precision of the grid reference
+>>> my_1m_ref = my_grid.write_refs(precision=1)
+>>> my_1m_ref
+[[16.776031, -3.005612, '33MXS9738967626']]
+# Create grid references from a CSV file
+>>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
+# Write the grid references to a new CSV with a custom column name
+>>> grid_from_csv.write_refs('my_refs.csv', ref_column='MY_REFS')
+# Create grid references from a shapefile
+>>> grid_from_shp = pyutm.Grid('my_points.shp')
+# Write the grid references to a new shapefile with 10 km precision
+>>> grid_from_shp.write_refs('my_refs.shp', precision=10000)
+```
+
+##### 3. Call the `write_uids()` function
+
+If a file name is specified, this function writes the **u**nique **id**entifiers of each point to the file.
+If the input data is in the CSV or shapefile format, the UIDs are added as a new column to the file.
+The function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 
 `write_uids(fname=None, uid_column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-')`
+
 - `fname`: the name of the file to which the UIDs will be written
 - `uid_column`: the header of the column in which the UIDs will be written
   - default column name is **UID_REFS** 
@@ -107,43 +159,7 @@ The PyUTM Grid object has two methods:
 - `k100`: whether to include the 100 kilometer square in the UIDs
 - `delimiter`: the character(s) used to separate the character sets  
 
-### How to use PyUTM with...
 
-#### Lists
-```python
-# Coordinates should be in (longitude, latitude) format
->>> lon_lat = (16.776031, -3.005612)
->>> my_grid = pyutm.Grid(lon_lat)
-# Create standardized grid references
->>> my_ref = my_grid.write_refs()
->>> my_ref
-[[16.776031, -3.005612, '33MXS97386762']]
-# To specify the precision of the grid reference, specify the parameter
->>> my_1m_ref = my_grid.write_refs(precision=1)
->>> my_1m_ref
-[[16.776031, -3.005612, '33MXS9738967626']]
-# Create a unique identifier
->>> my_uid = my_grid.write_uids()
->>> my_uid
-[[16.776031, -3.005612, '33M-XS-9738-6762-0']]
-# Add multiple coordinates to a new grid 
->>> lon_lats = [(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)]
->>> my_grid = pyutm.Grid(lon_lats)
-# Modify the unique identifier
->>> my_1km_refs = my_grid.write_refs(prefix='T', gzd=False, precision=1000)
->>> my_1km_refs
-[[16.776031, -3.005612, 'T-XS-97-67-0'], [16.772291, -3.007136, 'T-XS-96-67-0'], [16.771549, -3.010145, 'T-XS-96-67-1']]
-```
-
-#### CSVs
-
-#### Shapefiles
-
-#### N.B.
-
-*Python 2.7 users must install the
-[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-before using this package.*
 
 ## References
 
@@ -156,3 +172,9 @@ National Geospatial-Intelligence Agency, *Universal Grids and Grid Reference Sys
 [NGA Standardization Document NGA.STND.0037_2.0.0_GRIDS](http://earth-info.nga.mil/GandG/publications/NGA_STND_0037_2_0_0_GRIDS/NGA.STND.0037_2.0.0_GRIDS.pdf).
 Washington, D.C.: Office of Geomatics, 2014.
 - Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful.
+
+#### N.B.
+
+*Python 2.7 users must install the
+[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
+before using this package.*
