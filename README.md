@@ -105,7 +105,8 @@ pip install pyutm
 
 If a file name is specified, this function writes the grid **ref**erence of each point to the file.
 If the input data is in the CSV or shapefile format, the grid references are added as a new column to the file.
-The function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`.
+
+This function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`.
 
 `write_refs(fname=None, ref_column='GRID_REFS', precision=10)`
 
@@ -141,7 +142,8 @@ The function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`
 
 If a file name is specified, this function writes the **u**nique **id**entifiers of each point to the file.
 If the input data is in the CSV or shapefile format, the UIDs are added as a new column to the file.
-The function always returns a list in the form `[[X, Y, 'UID'], ...]`.
+
+This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 
 `write_uids(fname=None, uid_column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-')`
 
