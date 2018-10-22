@@ -31,6 +31,10 @@ class Point:
         except TypeError:
             pass
 
+        print(self.zone_number)
+        print(self.zone_letter)
+
+
         # Only continue if the zone information can be computed
         if self.zone_number and self.zone_letter:
             self.lonlat_to_utm(longitude, latitude)
@@ -243,21 +247,21 @@ class UID:
                 self.uids = self.prefix_column.str.cat(self.uids, self.delimiter)
             elif self.prefix:
                 self.uids = '{}{}'.format(self.prefix, self.delimiter) + self.uids.astype(str)
-        except AttributeError:
-            pass
+        except AttributeError as e:
+            print(e)
 
     def set_uid(self):
         """
-        Adds a unique number (0, 1, 2, ...) to the base UID.
+        Adds a unique number (1, 2, 3,...) to the base UID.
         """
+        start = 1
         duplicate = self.uids.duplicated(keep=False)
-        # TODO Changing this to '1' could act as a more natural count of the unique grid references
-        unique_suffix = ['0'] * self.uids[-duplicate].size
+        unique_suffix = [str(start)] * self.uids[-duplicate].size
         self.uids[-duplicate] = self.uids[-duplicate].str.cat(unique_suffix, sep=self.delimiter)
 
         # TODO Fix: this is SLOW
         duplicate_uids = set(self.uids[duplicate])
         for uid in duplicate_uids:
             df = self.uids[self.uids == uid]
-            unique_suffixes = [str(suffix) for suffix in range(df.size)]
+            unique_suffixes = [str(suffix) for suffix in range(start, start + df.size)]
             self.uids[self.uids == uid] = df.str.cat(unique_suffixes, sep=self.delimiter)

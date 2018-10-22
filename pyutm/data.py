@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import pandas
 import shapefile
@@ -64,7 +65,8 @@ def from_shp(data, prefix_column=None):
         if prefix_column:
             # Get the index of the specified prefix column
             index = [field[0] for field in sf.fields].index(prefix_column[0]) - 1
-            prefixes = [rec[index] for rec in sf.iterRecords()]
+            # Cast the prefix to a string
+            prefixes = [str(rec[index]) for rec in sf.iterRecords()]
             dataframe = pandas.DataFrame(data=prefixes, columns=(0,))
             return
         # Only accept Point, PointZ and PointM geometries
@@ -104,7 +106,7 @@ def to_csv(fname, column, input_data, dataframe):
         output_df.to_csv(fname, index=False)
 
 
-def to_shp(fname, column, input_data, dataframe, shape_type):
+def to_shp(fname, column, input_data, dataframe, shape_type, uid):
     """
     Adds an attribute column containing grid references/UIDs to a SHP file.
     :param fname: string, file name of the output data
@@ -113,17 +115,30 @@ def to_shp(fname, column, input_data, dataframe, shape_type):
     :param dataframe: Pandas dataframe, data to be written
     :param shape_type: int, shape type as defined on page 4 of
     http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
+    :param uid: boolean, whether the function was called by write_uids()
     """
     if fname:
         fname = set_fname(fname, input_data)
         r = shapefile.Reader(input_data)
         w = shapefile.Writer(shape_type)
         w.fields = r.fields[1:]
-        w.field(column, 'C', size=15)
+        if uid:
+            width = dataframe[column].map(len).max()
+            w.field(column, 'C', size=width)
+        else:
+            w.field(column, 'C', size=15)
         for index, shaperec in enumerate(r.iterShapeRecords()):
             w.point(*shaperec.shape.points[0])
             w.record(*shaperec.record + [dataframe[column].iloc[index]])
         w.save(fname)
+
+        # Copy and rename the projection file, if one exists
+        try:
+            src_prj = os.path.splitext(input_data)[0] + '.prj'
+            dst_prj = os.path.splitext(fname)[0] + '.prj'
+            shutil.copy(src_prj, dst_prj)
+        except (FileNotFoundError, shutil.SameFileError):
+            pass
 
 
 def set_fname(path, input_data):

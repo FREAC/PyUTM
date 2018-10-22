@@ -14,6 +14,8 @@ For a discussion regarding the benefits of using the US National Grid, see this 
 
 [What is a grid reference?](#what-is-a-grid-reference)
 
+- [Reading a grid reference](#reading-a-grid-reference)
+
 [What is a unique identifier?](#what-is-a-unique-identifier)
 
 [Examples](#examples)
@@ -31,15 +33,23 @@ Based on the Universal Transverse Mercator (UTM) and Universal Polar Stereograph
 The precision of a location increases as characters are added to its grid reference and
 decreases as characters are removed.
 
+The following are all valid examples of grid references at different levels of precision:
+- 18LVJ
+- 12JXQ69
+- 30UWB8270
+- 36RUU203175
+- **33MXS97396762**
+- 44RKR0691609280
+
 The **first set** of characters in a grid reference describes its **Grid Zone Designation** (GZD).
-- This can be either two or three characters long and is comprised of a number between 1 and 60 followed by a letter
-(*e.g.* **33M**). By default, PyUTM adds a leading zero to numbers less than 10 (*e.g.* **02U**).
+- This is usually three characters long and is comprised of a number between 1 and 60 followed by a letter: **33M**.
+- By default, PyUTM adds a leading zero to numbers less than 10: **02U**.
 - With some exceptions in the northern latitudes and at the poles, the GZD describes a standard area encompassing
 6° of longitude and 8° of latitude.
 - The letters 'I' and 'O' are omitted to avoid confusion with the numbers '1' and '0'.
 
 The **second set** of characters in a grid reference describes its **100 kilometer square** within the GZD.
-- This is always two characters long and is comprised of two letters, again omitting 'I' and 'O' (*e.g.* **XS**).
+- This is always two characters long and is comprised of two letters, again omitting 'I' and 'O': **XS**.
 - Though the majority of squares within a GZD are 100 km on each side, those located on the edges of the GZD can be
 smaller in area, due to the [conformal nature of the projections](https://en.wikipedia.org/wiki/Conformal_map_projection)
 from which the grid references are derived.
@@ -48,8 +58,7 @@ The **third and fourth sets** of characters in a grid reference describe its dis
 corner of the 100 km square. The third set of characters describes the **location's distance east** of the lower left corner (its *easting*),
 while the fourth set of characters describes the **location's distance north** of the lower left corner (its *northing*).
 - Both sets can be between zero and five characters long and are comprised entirely of digits; they must have the same
-number of characters and are not separated by a space (*e.g.* **97396762**).
-  - **97396762** represents a location of 9739 easting and 6762 northing.
+number of characters and are not separated by a space: **97396762** represents a location of **9739 easting** and **6762 northing**.
 - The number of digits used in each set determines the number of meters that those digits represent. As the number of
 digits increases from zero to five, so does the precision with which a location can be established within the 100 km square:
 
@@ -61,6 +70,18 @@ Two | 1 000 | Neighborhood
 Three | 100 | Football Field
 Four | 10 | House
 Five | 1 | Bath towel
+
+### Reading a grid reference
+
+In order to locate the area described by a grid reference, break the grid reference down into its component sets
+and read from left to right.
+
+For example, 52JGS0495 contains the following sets:
+- GZD: 52J
+- 100 km square: GS
+- Distance: 0495
+  - Easting: 04
+  - Northing: 95
 
 ### What is a unique identifier?
 

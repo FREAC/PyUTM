@@ -131,7 +131,7 @@ class Grid:
         except (KeyError, ValueError, AttributeError):
             self._error('Invalid column name')
 
-    def _write_data(self, fname, column):
+    def _write_data(self, fname, column, uid=False):
         """
         Uses the setrefs module to write data to a list or file, based on the data type.
         Always returns a nested list of the computed data.
@@ -142,7 +142,7 @@ class Grid:
         if self._input_datatype == 1:
             data.to_csv(fname, column, self._input_data, self._data)
         elif self._input_datatype == 2:
-            data.to_shp(fname, column, self._input_data, self._data, self._shape_type)
+            data.to_shp(fname, column, self._input_data, self._data, self._shape_type, uid)
         return data.to_list(self._data, column)
 
     def write_refs(self, fname=None, ref_column='GRID_REFS', precision=10):
@@ -181,7 +181,7 @@ class Grid:
         # Select only the relevant column from the dataframe
         grid_refs = self._data[ref_column]
         self._get_uids(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
-        return self._write_data(fname, uid_column)
+        return self._write_data(fname, uid_column, uid=True)
 
     @staticmethod
     def _error(message):
@@ -215,34 +215,42 @@ if __name__ == "__main__":
                 ((-36.69218329018642, -45.06991972863084), 3), ((43.97154480746007, -46.140677181254475), 4)]
 
 # TODO write tests!!!
-    g = Grid((-34.907587535813704, 50.58441270574641))
-    # g_output = g.write_refs(precision=10)
-    g_output = g.write_uids(gzd=False, precision=10)
-    print(g_output)
-    h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
-    h_output = h.write_refs()
-    # h_output = h.write_uids(k100=False, prefix='pi')
-    print(h_output)
-    # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
-    #           (9, (43.97154480746007, -46.140677181254475))], 1)
-    i = Grid(lonlats)
-    # i_output = i.write_refs()
-    i_output = i.write_uids()
-    # print(i_output)
-    j = Grid(lonlats2)
-    j_output = j.write_refs()
-    j_output = j.write_uids()
-    print(j_output)
+#     g = Grid((-34.907587535813704, 50.58441270574641))
+#     # g_output = g.write_refs(precision=10)
+#     g_output = g.write_uids(gzd=False, precision=10)
+#     print(g_output)
+#     h = Grid([(-34.907587535813704, 50.58441270574641), (108.93083026662671, 32.38153601114477)])
+#     h_output = h.write_refs()
+#     # h_output = h.write_uids(k100=False, prefix='pi')
+#     print(h_output)
+#     # g = Grid([(7, (-34.907587535813704, 50.58441270574641)), (8, (108.93083026662671, 32.38153601114477)),
+#     #           (9, (43.97154480746007, -46.140677181254475))], 1)
+#     i = Grid(lonlats)
+#     # i_output = i.write_refs()
+#     i_output = i.write_uids()
+#     # print(i_output)
+#     j = Grid(lonlats2)
+#     j_output = j.write_refs()
+#     j_output = j.write_uids()
+#     print(j_output)
+#
+#     g = Grid((16.776031, -3.005612))
+#     print(g.write_refs(precision=1))
 
-    g = Grid((16.776031, -3.005612))
-    print(g.write_refs(precision=1))
+    g = Grid((131.032490, -25.344893))
+    print('Ex:', g.write_refs(precision=1000))
 
-    g = Grid((-176.290198, 30.438503))
-    print(g.write_refs(precision=100))
+    # g = Grid([(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)])
+    # print('T:', g.write_uids(prefix='M', gzd=False, precision=1000))
+    # print('T:', g.write_refs())
 
-    g = Grid([(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)])
-    print('T:', g.write_uids(prefix='M', gzd=False, precision=1000))
-    print('T:', g.write_refs())
+    # shp = './tests/data/Hydrants.shp'
+    #
+    # hydrants = Grid('./tests/data/City_of_Tallahassee_Fire_Hydrants.shp')
+    # hydrants.write_refs(shp)
+    # new_hyd = Grid(shp)
+    # newer_hyd = new_hyd.write_uids(shp, prefix='H', precision=100, gzd=False)
+    # print(newer_hyd)
 
     # g = Grid(lonlats3)
     # #
@@ -260,10 +268,10 @@ if __name__ == "__main__":
     #
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])")
-    c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
-    csv_output = c.write_refs()
-    # csv_output = c.write_uids(gzd=False, prefix_column='ADD_THESE')
-    print(csv_output)
+    # c = Grid('./tests/data/points.csv', ['POINT_X', 'POINT_Y'])
+    # csv_output = c.write_refs()
+    # # csv_output = c.write_uids(gzd=False, prefix_column='ADD_THESE')
+    # print(csv_output)
 
     # print()
     # print("g = Grid('./tests/data/points.csv', ['POINT_X', 0])")
@@ -285,10 +293,10 @@ if __name__ == "__main__":
     # print("g = Grid('./tests/data/points.csv')")
     # g = Grid('./tests/data/points.csv')
 
-    j = Grid('./tests/data/points.shp')
-    j_output = j.write_refs(r'test.shp')
-    j_output = j.write_uids(prefix_column='ATTR')
-    print(j_output)
+    # j = Grid('./tests/data/points.shp')
+    # j_output = j.write_refs(r'test.shp')
+    # j_output = j.write_uids(prefix_column='ATTR')
+    # print(j_output)
 
     # x = Grid('./tests/data/points.shp', epsg=3086)
     # x_output = x.write_references(fname=r'./test.shp', column='Grid ID')
