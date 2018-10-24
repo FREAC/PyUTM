@@ -4,11 +4,16 @@ PyUTM is a Python package that creates standardized grid references for point da
 It can also use those grid references to create spatially meaningful unique identifiers for tasks such as asset naming.
 
 Grid references can be created in the following formats:
-- US National Grid (USNG)
+- United States National Grid (USNG)
 - Military Grid Reference System (MGRS)
 - Universal Transverse Mercator (UTM) (*in progress*)
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
+
+The following are currently in development but not yet supported:
+- Locations requiring UPS grid references
+- Exceptions to the grid zones in UTM
+- UTM coordinates
 
 ## Table of Contents
 
