@@ -94,7 +94,7 @@ This grid reference therefore describes a location...
 ![100km](./docs/100km.JPG)
 
 - Because the easting and northing contain **two** digits, they describe a location with a precision of 1,000 meters (1 km),
-found **4 km east** and **95 km north** of its 100 km square's lower left corner:
+found **4 km east** and **95 km north** of the 100 km square's lower left corner:
 
 ![distance](./docs/dist.JPG)
 
