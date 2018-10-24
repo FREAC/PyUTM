@@ -82,7 +82,7 @@ To locate the area described by a grid reference, break the grid reference down 
 then read from left to right.
 
 For example, the grid reference **52JGS0495** contains the following sets:
-- GZD: 52J
+- Grid Zone Designation: 52J
 - 100 km square: GS
 - Distance: 0495
   - Easting: 04
