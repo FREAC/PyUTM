@@ -71,17 +71,36 @@ Three | 100 | Football Field
 Four | 10 | House
 Five | 1 | Bath towel
 
-### Reading a grid reference
+### Reading a USNG or MGRS grid reference
 
-In order to locate the area described by a grid reference, break the grid reference down into its component sets
-and read from left to right.
+To locate the area described by a grid reference, break the grid reference down into its component sets
+then read from left to right.
 
-For example, 52JGS0495 contains the following sets:
+For example, **52JGS0495** contains the following sets:
 - GZD: 52J
 - 100 km square: GS
 - Distance: 0495
   - Easting: 04
   - Northing: 95
+
+This grid reference therefore describes a location...
+
+- ...within grid zone **52J**...
+![grid_zone](./docs/gzd.jpg)
+
+- ...that is within the 100 km square **GS**.
+![100km](./docs/100km.JPG)
+
+- Because the easting and northing contain **two** digits, they describe a location with a precision of 1,000 meters (1 km),
+found **4 km east** and **95 km north** of its 100 km square's lower left corner:
+![distance](./docs/dist.JPG)
+
+- Here we see the location described by 52JGS0495: [Uluru](https://en.wikipedia.org/wiki/Uluru).
+![location](./docs/location.JPG)
+
+Note that the grid reference does **not** describe **the point** where the easting and northing cross,
+but rather the **entire 1 km square** to the northeast of that point.
+To describe a smaller area, we would add digits to the distance, thereby increasing its precision.
 
 ### What is a unique identifier?
 
@@ -205,20 +224,21 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 >>> grid_from_shp.write_refs('my_refs.shp', precision=10000)
 ```
 
+##### N.B.
+
+*Python 2.7 users must install the
+[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
+before using this package.*
+
 ## References
 
 National Geospatial-Intelligence Agency, *The Universal Grids and the Transverse Mercator and Polar Stereographic Map Projections*,
 [NGA Standardization Document NGA.SIG.0012_2.0.0_UTMUPS](http://earth-info.nga.mil/GandG/publications/NGA_SIG_0012_2_0_0_UTMUPS/NGA.SIG.0012_2.0.0_UTMUPS.pdf).
 Washington, D.C.: Office of Geomatics, 2014.
-- PyUTM implements the logic found in Sections 11, 12 and 14 of this document.
+- PyUTM will eventually implement the logic found in Sections 11, 12 and 14 of this document.
 
 National Geospatial-Intelligence Agency, *Universal Grids and Grid Reference Systems*,
 [NGA Standardization Document NGA.STND.0037_2.0.0_GRIDS](http://earth-info.nga.mil/GandG/publications/NGA_STND_0037_2_0_0_GRIDS/NGA.STND.0037_2.0.0_GRIDS.pdf).
 Washington, D.C.: Office of Geomatics, 2014.
 - Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful.
-
-#### N.B.
-
-*Python 2.7 users must install the
-[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-before using this package.*
+- PyUTM currently implements a version of the logic found in Appendix B of this document.
