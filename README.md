@@ -10,7 +10,7 @@ Grid references can be created in the following formats:
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
 
-The following are currently in development but not yet supported:
+The following features are currently in development but not yet supported:
 - Locations requiring UPS grid references
 - Exceptions to the grid zones in UTM
 - UTM coordinates
