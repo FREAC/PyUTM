@@ -102,7 +102,7 @@ found **4 km east** and **95 km north** of the 100 km square's lower left corner
 
 ![location](./docs/location.JPG)
 
-Note that the grid reference does **not** describe **the point** where the easting and northing cross,
+Note that the grid reference does **not** describe the **point** where the easting and northing cross,
 but rather the **entire 1 km square** to the northeast of that point.
 To describe a smaller area, we would add digits to the distance, thereby increasing its precision.
 
