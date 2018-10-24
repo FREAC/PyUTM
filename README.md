@@ -14,7 +14,7 @@ For a discussion regarding the benefits of using the US National Grid, see this 
 
 [What is a grid reference?](#what-is-a-grid-reference)
 
-- [Reading a grid reference](#reading-a-grid-reference)
+- [Reading a grid reference](#reading-a-usng-or-mgrs-grid-reference)
 
 [What is a unique identifier?](#what-is-a-unique-identifier)
 
