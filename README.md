@@ -76,7 +76,7 @@ Five | 1 | Bath towel
 To locate the area described by a grid reference, break the grid reference down into its component sets
 then read from left to right.
 
-For example, **52JGS0495** contains the following sets:
+For example, the grid reference **52JGS0495** contains the following sets:
 - GZD: 52J
 - 100 km square: GS
 - Distance: 0495
