@@ -86,16 +86,20 @@ For example, **52JGS0495** contains the following sets:
 This grid reference therefore describes a location...
 
 - ...within grid zone **52J**...
-![grid_zone](./docs/gzd.jpg)
+
+![grid_zone](./docs/gzd.JPG)
 
 - ...that is within the 100 km square **GS**.
+
 ![100km](./docs/100km.JPG)
 
 - Because the easting and northing contain **two** digits, they describe a location with a precision of 1,000 meters (1 km),
 found **4 km east** and **95 km north** of its 100 km square's lower left corner:
+
 ![distance](./docs/dist.JPG)
 
 - Here we see the location described by 52JGS0495: [Uluru](https://en.wikipedia.org/wiki/Uluru).
+
 ![location](./docs/location.JPG)
 
 Note that the grid reference does **not** describe **the point** where the easting and northing cross,
