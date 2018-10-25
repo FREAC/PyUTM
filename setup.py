@@ -1,4 +1,7 @@
-import setuptools
+try:
+    import setuptools
+except ImportError:
+    from distutils.core import setuptools
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -8,7 +11,7 @@ setuptools.setup(
     version="0.1",
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
-    description="Creates UTM (and UPS) grid references and unique identifiers for point data.",
+    description="Creates standardized grid references and unique identifiers for point data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/FREAC/pyutm",
@@ -24,5 +27,5 @@ setuptools.setup(
         'pandas',
         'pyshp>=2'
     ],
-    python_requires='>=2.7, >=3'
+    python_requires='>=2.7, >=3.0'
 )
