@@ -1,2 +1,2 @@
-import version
-from main import Grid
+from .__version__ import __version__
+from .main import Grid
