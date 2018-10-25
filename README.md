@@ -251,3 +251,6 @@ National Geospatial-Intelligence Agency, *Universal Grids and Grid Reference Sys
 Washington, D.C.: Office of Geomatics, 2014.
 - Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful.
 - PyUTM currently implements a version of the logic found in Appendix B of this document.
+
+National Geospatial-Intelligence Agency, Office of Geomatics, [Coordinate Systems Data](http://earth-info.nga.mil/GandG/update/index.php?action=home#tab_coord-data).
+- A repository of worldwide GIS layers for the UTM and MGRS coordinate systems
