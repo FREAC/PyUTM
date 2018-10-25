@@ -3,9 +3,13 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+version = {}
+with open('...sample/version.py') as fp:
+    exec(fp.read(), version)
+
 setuptools.setup(
     name="pyutm",
-    version="0.1.5",
+    version=version['__version__'],
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
     description="Creates standardized grid references and unique identifiers for point data.",
