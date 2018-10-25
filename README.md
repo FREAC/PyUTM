@@ -10,7 +10,7 @@ Grid references can be created in the following formats:
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
 
-#### Version 0.1
+#### Version 0.1 :building_construction:
 
 The following features are currently in development, but not yet supported in the current version:
 - UTM coordinates
@@ -214,7 +214,6 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 - `delimiter`: the character(s) used to separate the character sets
   - The default character is a dash: **-**
 
-# TODO CHANGE THIS CODE BLOCK
 ```python
 >>> lon_lat = (16.776031, -3.005612)
 >>> my_grid = pyutm.Grid(lon_lat)
@@ -240,7 +239,7 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 
 ### 4. Call the `write_utm()` method
 
-:hammer_and_wrench: *Coming soon* :building_construction:
+:hammer_and_wrench: *Coming soon* :hammer_and_wrench:
 
 ##### N.B.
 
