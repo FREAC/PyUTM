@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyutm",
-    version="0.1.4",
+    version="0.1.5",
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
     description="Creates standardized grid references and unique identifiers for point data.",
