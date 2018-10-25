@@ -10,7 +10,7 @@ Grid references can be created in the following formats:
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
 
-#### Version 0.1 :building_construction:
+#### Version 0.1
 
 The following features are currently in development, but not yet supported in the current version:
 - UTM coordinates
@@ -30,6 +30,7 @@ The following features are currently in development, but not yet supported in th
 - [Create a Grid object](#1-create-a-grid-object)
 - [Call the write_refs() method](#2-call-the-write_refs-method)
 - [Call the write_uids() method](#3-call-the-write_uids-method)
+- [Call the write_utm() method](#4-call-the-write_utm-method)
 
 [References](#references)
 
