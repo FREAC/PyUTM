@@ -31,10 +31,6 @@ class Point:
         except TypeError:
             pass
 
-        print(self.zone_number)
-        print(self.zone_letter)
-
-
         # Only continue if the zone information can be computed
         if self.zone_number and self.zone_letter:
             self.lonlat_to_utm(longitude, latitude)

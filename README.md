@@ -10,10 +10,12 @@ Grid references can be created in the following formats:
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
 
-The following features are currently in development but not yet supported:
-- Locations requiring UPS grid references
-- Exceptions to the grid zones in UTM
+#### Version 0.1
+
+The following features are currently in development, but not yet supported in the current version:
 - UTM coordinates
+- Locations requiring UPS grid references
+- Exceptions to grid zones in UTM
 
 ## Table of Contents
 
@@ -161,7 +163,7 @@ This function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]
 
 - `fname` *(optional)*: the name of the file to which the grid references are written
   - The output file must be in the same format as the input data
-- `ref_column`: the header of the column to which the grid references are written
+- `column`: the header of the column to which the grid references are written
   - The default column name is **GRID_REFS** 
 - `precision`: the desired precision of the grid references, in meters
   - The default precision is **10 meters**
@@ -180,7 +182,7 @@ This function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]
 # Create grid references from a CSV file
 >>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
 # Write the grid references to a new CSV with a custom column name
->>> grid_from_csv.write_refs('my_refs.csv', ref_column='MY_REFS')
+>>> grid_from_csv.write_refs('my_refs.csv', column='MY_REFS')
 # Create grid references from a shapefile
 >>> grid_from_shp = pyutm.Grid('my_points.shp')
 # Write the grid references to a new shapefile with 10 km precision
@@ -198,7 +200,7 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 
 - `fname` *(optional)*: the name of the file to which the UIDs are written
   - The output file must be in the same format as the input data
-- `uid_column`: the header of the column to which the UIDs are written
+- `column`: the header of the column to which the UIDs are written
   - The default column name is **UID_REFS** 
 - `precision`: the desired precision of the UIDs, in meters
   - The default precision is **10 meters**
@@ -208,6 +210,7 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
   - The default is **True**
 - `k100`: whether to include the 100 kilometer square in the UIDs
   - The default is **True**
+  - If `k100` is set to False, `gzd` is also set to False
 - `delimiter`: the character(s) used to separate the character sets
   - The default character is a dash: **-**
 
@@ -215,23 +218,29 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 ```python
 >>> lon_lat = (16.776031, -3.005612)
 >>> my_grid = pyutm.Grid(lon_lat)
-# Create grid references
->>> my_ref = my_grid.write_refs()
->>> my_ref
-[[16.776031, -3.005612, '33MXS97386762']]
-# Specify the precision of the grid reference
->>> my_1m_ref = my_grid.write_refs(precision=1)
->>> my_1m_ref
-[[16.776031, -3.005612, '33MXS9738967626']]
-# Create grid references from a CSV file
+# Create unique identifiers
+>>> my_uid = my_grid.write_uids()
+>>> my_uid
+[[16.776031, -3.005612, '33M-XS-9738-6762-1']]
+# Increase the precision, add a prefix to the UID, remove the GZD and change the delimiter
+>>> my_prefix = my_grid.write_uids(precision=1, prefix='m', gzd=False, delimiter=':')
+>>> my_prefix
+[[16.776031, -3.005612, 'm:XS:97389:67626:1']]
+# Create UIDs from a CSV file
 >>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
-# Write the grid references to a new CSV with a custom column name
->>> grid_from_csv.write_refs('my_refs.csv', ref_column='MY_REFS')
-# Create grid references from a shapefile
+# Add prefixes to the UIDs using values in a column of the input CSV,
+# then write the UIDs to a new CSV with a custom column name
+>>> grid_from_csv.write_refs('my_uids.csv', column='MY_UIDS', prefix_column='MY_PREFIXES')
+# Create UIDs from a shapefile
 >>> grid_from_shp = pyutm.Grid('my_points.shp')
-# Write the grid references to a new shapefile with 10 km precision
->>> grid_from_shp.write_refs('my_refs.shp', precision=10000)
+# Add prefixes to the UIDs using values in a column of the input shapefile
+# and decrease the precision, then write the UIDs to a new shapefile.
+>>> grid_from_shp.write_refs('my_uids.shp', precision=1000)
 ```
+
+### 4. Call the `write_utm()` method
+
+:hammer_and_wrench: *Coming soon* :building_construction:
 
 ##### N.B.
 

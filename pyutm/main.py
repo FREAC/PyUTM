@@ -90,11 +90,11 @@ class Grid:
         except (KeyError, ValueError):
             self._error('Invalid column name')
 
-    def _get_uids(self, grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter):
+    def _get_uids(self, grid_refs, column, prefix, prefix_column, gzd, k100, delimiter):
         """
         Uses the locate module to compute a Unique ID (UID) for every value in the input data.
         :param grid_refs: dataframe, grid references to be modified
-        :param uid_column: string, column name for UIDs
+        :param column: string, column name for UIDs
         :param prefix: string, characters added to beginning of UID
         :param prefix_column: Pandas Series, characters added to beginning of UID
         :param gzd: whether the Grid Zone Designation should be included in the UID
@@ -102,9 +102,9 @@ class Grid:
         :param delimiter: string
         """
         if grid_refs.any():
-            self._data[uid_column] = locate.UID(grid_refs, prefix, prefix_column, gzd, k100, delimiter).uids
+            self._data[column] = locate.UID(grid_refs, prefix, prefix_column, gzd, k100, delimiter).uids
         else:
-            self._data[uid_column] = None
+            self._data[column] = None
 
     def _get_prefix_column(self, prefix_column):
         """
@@ -145,27 +145,27 @@ class Grid:
             data.to_shp(fname, column, self._input_data, self._data, self._shape_type, uid)
         return data.to_list(self._data, column)
 
-    def write_refs(self, fname=None, ref_column='GRID_REFS', precision=10):
+    def write_refs(self, fname=None, column='GRID_REFS', precision=10):
         """
         Gets the grid references for a set of points and writes them to the specified file,
         then returns a nested list of the coordinates and their grid reference.
         If no file name is given, returns a nested list without writing to a file.
         :param fname: string, default=None, file name of the output data
-        :param ref_column: string, default='GRID_REFS', column name containing the grid references
+        :param column: string, default='GRID_REFS', column name containing the grid references
         :param precision: int, default=10, desired precision of grid reference
         :return: list, nested list in [X, Y, grid reference] format
         """
-        self._get_grid_refs(ref_column, precision)
-        return self._write_data(fname, ref_column)
+        self._get_grid_refs(column, precision)
+        return self._write_data(fname, column)
 
-    def write_uids(self, fname=None, uid_column='UID_REFS', precision=10,
-                   prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-'):
+    def write_uids(self, fname=None, column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True,
+                   k100=True, delimiter='-'):
         """
         Gets the Unique IDs (UID) for a set of points and writes them to the specified file,
         then returns a nested list of the coordinates and their UID.
         If no file name is given, returns a nested list without writing to a file.
         :param fname: string, default=None, file name of the output data
-        :param uid_column: string, default='UID_REFS', column name containing the UIDs
+        :param column: string, default='UID_REFS', column name containing the UIDs
         :param precision: int, default=10, desired precision of UID
         :param prefix: string, default=None, characters added to beginning of UID
         :param prefix_column: Pandas Series, default=None, characters added to beginning of UID
@@ -180,8 +180,8 @@ class Grid:
         self._get_grid_refs(ref_column, precision)
         # Select only the relevant column from the dataframe
         grid_refs = self._data[ref_column]
-        self._get_uids(grid_refs, uid_column, prefix, prefix_column, gzd, k100, delimiter)
-        return self._write_data(fname, uid_column, uid=True)
+        self._get_uids(grid_refs, column, prefix, prefix_column, gzd, k100, delimiter)
+        return self._write_data(fname, column, uid=True)
 
     @staticmethod
     def _error(message):
@@ -237,8 +237,9 @@ if __name__ == "__main__":
 #     g = Grid((16.776031, -3.005612))
 #     print(g.write_refs(precision=1))
 
-    g = Grid((131.032490, -25.344893))
-    print('Ex:', g.write_refs(precision=1000))
+    lon_lat = (16.776031, -3.005612)
+    g = Grid(lon_lat)
+    print('Ex:', g.write_uids(prefix='m', gzd=False, precision=1, delimiter=':'))
 
     # g = Grid([(16.776031, -3.005612), (16.772291, -3.007136), (16.771549, -3.010145)])
     # print('T:', g.write_uids(prefix='M', gzd=False, precision=1000))
