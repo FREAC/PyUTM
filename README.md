@@ -10,7 +10,7 @@ Grid references can be created in the following formats:
 
 For a discussion regarding the benefits of using the US National Grid, see this awesome document.
 
-#### Version 0.1
+### Version 0.1
 
 The following features are currently in development, but not yet supported in the current version:
 - UTM coordinates
