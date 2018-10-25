@@ -1,14 +1,11 @@
-try:
-    import setuptools
-except ImportError:
-    from distutils.core import setuptools
+import setuptools
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="pyutm",
-    version="0.1",
+    version="0.1.4",
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
     description="Creates standardized grid references and unique identifiers for point data.",
@@ -25,7 +22,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'pandas',
-        'pyshp>=2'
-    ],
-    python_requires='>=2.7, >=3.0'
+        'pyshp',
+        'pyproj'
+    ]
 )
