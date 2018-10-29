@@ -125,10 +125,13 @@ the GZD has not been used and delimiters have been added to separate the charact
 
 ## Examples
 
-To install PyUTM, use PyPI:[*](#nb)
+To install PyUTM, use PyPI:
 ```
 pip install pyutm
 ```
+*N.B. Python 2.7 users must install the
+[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
+before using this package.*
 
 ### 1. Create a `Grid()` object
 
@@ -170,8 +173,8 @@ This function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]
   - The default precision is **10 meters**
 
 ```python
->>> lon_lat = (16.776031, -3.005612)
->>> my_grid = pyutm.Grid(lon_lat)
+>>> lonlat = (16.776031, -3.005612)
+>>> my_grid = pyutm.Grid(lonlat)
 # Create grid references
 >>> my_ref = my_grid.write_refs()
 >>> my_ref
@@ -216,8 +219,8 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
   - The default character is a dash: **-**
 
 ```python
->>> lon_lat = (16.776031, -3.005612)
->>> my_grid = pyutm.Grid(lon_lat)
+>>> lonlat = (16.776031, -3.005612)
+>>> my_grid = pyutm.Grid(lonlat)
 # Create unique identifiers
 >>> my_uid = my_grid.write_uids()
 >>> my_uid
@@ -241,12 +244,6 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 ### 4. Call the `write_utm()` method
 
 :hammer_and_wrench: *Coming soon* :hammer_and_wrench:
-
-##### N.B.
-
-*Python 2.7 users must install the
-[Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-before using this package.*
 
 ## References
 
