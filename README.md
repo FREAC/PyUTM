@@ -129,7 +129,7 @@ To install PyUTM, use PyPI:
 ```
 pip install pyutm
 ```
-*N.B. Python 2.7 users must install the
+*N.B. Python 2.7 Windows users may need to install the
 [Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
 before using this package.*
 
