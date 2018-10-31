@@ -163,7 +163,7 @@ If the input data is in the CSV or shapefile format, the grid references are add
 
 This function always returns a list in the form `[[X, Y, 'Grid Reference'], ...]`.
 
-`write_refs(fname=None, ref_column='GRID_REFS', precision=10)`
+`write_refs(fname=None, column='GRID_REFS', precision=10)`
 
 - `fname` *(optional)*: the name of the file to which the grid references are written
   - The output file must be in the same format as the input data
@@ -200,7 +200,7 @@ If the input data is in the CSV or shapefile format, the UIDs are added as a new
 
 This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 
-`write_uids(fname=None, uid_column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-')`
+`write_uids(fname=None, column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True, k100=True, delimiter='-')`
 
 - `fname` *(optional)*: the name of the file to which the UIDs are written
   - The output file must be in the same format as the input data
