@@ -8,7 +8,7 @@ Grid references can be created in the following formats:
 - Military Grid Reference System (MGRS)
 - Universal Transverse Mercator (UTM) (*in progress*)
 
-For a discussion regarding the benefits of using the US National Grid, see this awesome document.
+[Click here](https://docs.google.com/presentation/d/1Sj8H7AQyQDO_LVTWMwXspqZk0c4IUEJ1imHb6UxlgR4/edit?usp=sharing) for the slides from the [SHRUG 2018](http://shrug-gis.org/workshop/2018/) presentation on this package.
 
 ### Version 0.1
 
