@@ -193,3 +193,9 @@ class Grid:
         import sys
         print('Error creating Grid object: {}'.format(message))
         sys.exit(1)
+
+
+lonlat = [(16.776031, -3.005612), (16.772291, -3.007136), (0, 0), (-93.0, 44.99995)]
+g = Grid(lonlat)
+myr = g.write_refs(precision=1)
+print(myr)

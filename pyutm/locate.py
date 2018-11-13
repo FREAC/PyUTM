@@ -82,7 +82,13 @@ class Point:
         if self.zone_letter < 'N':
             proj4 += ' +south'
         p = pyproj.Proj(proj4)
-        self.utm_e, self.utm_n = p(longitude, latitude)
+        utm_e, utm_n = p(longitude, latitude)
+
+        # This is required due to a rounding error in pyproj (Issue #151)
+        # Without this fix, what should be 500000.00 (in Proj4) is returned as 499999.999999999
+        coord = '{:.2f}'
+        self.utm_e = float(coord.format(utm_e))
+        self.utm_n = float(coord.format(utm_n))
 
     @staticmethod
     def reduce_to_100k(number):
@@ -154,26 +160,27 @@ class Point:
     def set_grid_coords(self, precision):
         """
         Determines grid coordinates for the given point using the specified level of precision.
-        The default setting is the highest level of precision: 1 meter.
+        The default setting is 10 meters.
         If the given precision falls between two precision levels, the lower precision level is chosen.
         Examples:
             1 -> 1
             2 -> 10
         :param precision: int, desired precision of grid reference
         """
-        utm_e = str(int(self.utm_e))
-        utm_n = str(int(self.utm_n))
+        coord = '{:010.2f}'
+        utm_e = coord.format(self.utm_e)
+        utm_n = coord.format(self.utm_n)
 
         if precision <= 1:
-            self.grid_coords = utm_e[-5:] + utm_n[-5:]
+            self.grid_coords = utm_e[-8:-3] + utm_n[-8:-3]
         elif precision <= 10:
-            self.grid_coords = utm_e[-5:-1] + utm_n[-5:-1]
+            self.grid_coords = utm_e[-8:-4] + utm_n[-8:-4]
         elif precision <= 100:
-            self.grid_coords = utm_e[-5:-2] + utm_n[-5:-2]
+            self.grid_coords = utm_e[-8:-5] + utm_n[-8:-5]
         elif precision <= 1000:
-            self.grid_coords = utm_e[-5:-3] + utm_n[-5:-3]
+            self.grid_coords = utm_e[-8:-6] + utm_n[-8:-6]
         elif precision <= 10000:
-            self.grid_coords = utm_e[-5:-4] + utm_n[-5:-4]
+            self.grid_coords = utm_e[-8:-7] + utm_n[-8:-7]
         else:
             self.grid_coords = ''
 

@@ -1,20 +1,20 @@
 import pyutm.main as main
 
 
-# def test_0_0():
-#
-#     lonlat = (0.0, 0.0)
-#     g = main.Grid(lonlat)
-#     refs = g.write_refs()
-#     assert refs == [[0.0, 0.0, '31NAA66020000']]
+def test_0_0():
+
+    lonlat = (0.0, 0.0)
+    g = main.Grid(lonlat)
+    refs = g.write_refs()
+    assert refs == [[0.0, 0.0, '31NAA66020000']]
 
 
-# def test_rounding():
-#
-#     lonlat = (-93.0, 44.99995)
-#     g = main.Grid(lonlat)
-#     refs = g.write_refs()
-#     assert refs == [(44.99995, -93.0, '15TWK00008294')]
+def test_rounding():
+
+    lonlat = (-93.0, 44.99995)
+    g = main.Grid(lonlat)
+    refs = g.write_refs()
+    assert refs == [[-93.0, 44.99995, '15TWK00008294']]
 
 
 def test_coords():
