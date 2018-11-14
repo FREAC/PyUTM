@@ -6,7 +6,7 @@ import pyutm.locate as locate
 
 class Grid:
     """
-    This class serves as the API for pyutm, with two main public methods: write_refs() and write_uids().
+    This class serves as the API for pyutm, with three main public methods: write_refs(), write_uids() and write_utms().
     """
     def __init__(self, data, columns=None, epsg=4326):
         """
@@ -81,9 +81,9 @@ class Grid:
 
     def _get_grid_refs(self, column, precision):
         """
-        Uses the locate module class to compute a grid reference for every value in the input data.
-        :param column: string, column name for grid references
-        :param precision: int, desired precision of grid references
+        Uses the locate module to compute a grid reference for every value in the input data.
+        :param column: string, column name of the grid references
+        :param precision: int, desired precision of the grid references
         """
         try:
             self._data[column] = [locate.Point(coord[0], coord[1], precision).grid_ref for coord in self._data.values]
@@ -94,17 +94,27 @@ class Grid:
         """
         Uses the locate module to compute a Unique ID (UID) for every value in the input data.
         :param grid_refs: dataframe, grid references to be modified
-        :param column: string, column name for UIDs
-        :param prefix: string, characters added to beginning of UID
-        :param prefix_column: Pandas Series, characters added to beginning of UID
-        :param gzd: whether the Grid Zone Designation should be included in the UID
-        :param k100: boolean, whether the 100k meter grid reference should be included in the UID
-        :param delimiter: string
+        :param column: string, column name of the UIDs
+        :param prefix: string, characters added to the beginning of the UIDs
+        :param prefix_column: Pandas Series, column name containing prefix values for the UIDs
+        :param gzd: whether the Grid Zone Designation should be included in the UIDs
+        :param k100: boolean, whether the 100k meter grid reference should be included in the UIDs
+        :param delimiter: string, delimiter of the UIDs
         """
         if grid_refs.any():
             self._data[column] = locate.UID(grid_refs, prefix, prefix_column, gzd, k100, delimiter).uids
         else:
             self._data[column] = None
+
+    def _get_utm_coords(self, column):
+        """
+        Uses the locate module to compute a UTM coordinate for every value in the input data.
+        :param column: string, column name of the UTM coordinates
+        """
+        try:
+            self._data[column] = [locate.Point(coord[0], coord[1]).utm_coord for coord in self._data.values]
+        except (KeyError, ValueError):
+            self._error('Invalid column name')
 
     def _get_prefix_column(self, prefix_column):
         """
@@ -133,11 +143,11 @@ class Grid:
 
     def _write_data(self, fname, column, uid=False):
         """
-        Uses the setrefs module to write data to a list or file, based on the data type.
+        Uses the data module to write data to a list or file, based on the data type.
         Always returns a nested list of the computed data.
         :param fname: string, file name of the output data
-        :param column: string, column name containing the grid reference or UID
-        :return: list, nested list in [X, Y, grid reference or UID] format
+        :param column: string, column name for the data
+        :return: list, nested list in [X, Y, data] format
         """
         if self._input_datatype == 1:
             data.to_csv(fname, column, self._input_data, self._data)
@@ -145,36 +155,36 @@ class Grid:
             data.to_shp(fname, column, self._input_data, self._data, self._shape_type, uid)
         return data.to_list(self._data, column)
 
-    def write_refs(self, fname=None, column='GRID_REFS', precision=10):
+    def write_refs(self, fname=None, column='GRID_REF', precision=10):
         """
         Gets the grid references for a set of points and writes them to the specified file,
-        then returns a nested list of the coordinates and their grid reference.
+        then returns a nested list of the coordinates and their grid references.
         If no file name is given, returns a nested list without writing to a file.
-        :param fname: string, default=None, file name of the output data
-        :param column: string, default='GRID_REFS', column name containing the grid references
-        :param precision: int, default=10, desired precision of grid reference
+        :param fname: string, default=None, file name for the output data
+        :param column: string, default='GRID_REF', column name for the grid references
+        :param precision: int, default=10, desired precision of the grid references
         :return: list, nested list in [X, Y, grid reference] format
         """
         self._get_grid_refs(column, precision)
         return self._write_data(fname, column)
 
-    def write_uids(self, fname=None, column='UID_REFS', precision=10, prefix=None, prefix_column=None, gzd=True,
+    def write_uids(self, fname=None, column='UID_REF', precision=10, prefix=None, prefix_column=None, gzd=True,
                    k100=True, delimiter='-'):
         """
         Gets the Unique IDs (UID) for a set of points and writes them to the specified file,
         then returns a nested list of the coordinates and their UID.
         If no file name is given, returns a nested list without writing to a file.
-        :param fname: string, default=None, file name of the output data
-        :param column: string, default='UID_REFS', column name containing the UIDs
-        :param precision: int, default=10, desired precision of UID
-        :param prefix: string, default=None, characters added to beginning of UID
-        :param prefix_column: Pandas Series, default=None, characters added to beginning of UID
-        :param gzd: boolean, default=True, whether the Grid Zone Designation should be included in the UID
-        :param k100: boolean, default=True, whether the 100k meter grid reference should be included in the UID
-        :param delimiter: string, default='-', delimiter of the UID
+        :param fname: string, default=None, file name for the output data
+        :param column: string, default='UID_REF', column name for the UIDs
+        :param precision: int, default=10, desired precision of the UIDs
+        :param prefix: string, default=None, characters added to the beginning of the UIDs
+        :param prefix_column: Pandas Series, default=None, column name containing prefix values for the UIDs
+        :param gzd: boolean, default=True, whether the Grid Zone Designation should be included in the UIDs
+        :param k100: boolean, default=True, whether the 100k meter grid reference should be included in the UIDs
+        :param delimiter: string, default='-', delimiter of the UIDs
         :return: list, nested list in [X, Y, UID] format
         """
-        ref_column = 'GRID_REFS'
+        ref_column = 'GRID_REF'
         if prefix_column:
             prefix_column = self._get_prefix_column(prefix_column)
         self._get_grid_refs(ref_column, precision)
@@ -182,6 +192,18 @@ class Grid:
         grid_refs = self._data[ref_column]
         self._get_uids(grid_refs, column, prefix, prefix_column, gzd, k100, delimiter)
         return self._write_data(fname, column, uid=True)
+
+    def write_utms(self, fname=None, column='UTM_COORD'):
+        """
+        Gets the UTM coordinates for a set of points and writes them to the specified file,
+        then returns a nested list of the coordinates and their grid reference.
+        If no file name is given, returns a nested list without writing to a file.
+        :param fname: string, default=None, file name for the output data
+        :param column: string, default='UTM_COORD', column name for the UTM coordinates
+        :return: list, nested list in [X, Y, UTM coordinate] format
+        """
+        self._get_utm_coords(column)
+        return self._write_data(fname, column)
 
     @staticmethod
     def _error(message):
