@@ -1,2 +1,2 @@
 from .__version__ import __version__
-# from .main import Grid
+from .main import Grid
