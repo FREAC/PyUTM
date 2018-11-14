@@ -38,6 +38,7 @@ class Point:
             self.set_grid_coords(precision)
 
         self.grid_ref = self.get_grid_reference()
+        self.utm_coord = self.get_utm_coord()
 
     def set_zone_number(self, longitude):
         """
@@ -84,7 +85,7 @@ class Point:
         p = pyproj.Proj(proj4)
         utm_e, utm_n = p(longitude, latitude)
 
-        # This is required due to a rounding error in pyproj (Issue #151)
+        # This is required due to a rounding error in pyproj (https://github.com/jswhit/pyproj/issues/151)
         # Without this fix, what should be 500000.00 (in Proj4) is returned as 499999.999999999
         coord = '{:.2f}'
         self.utm_e = float(coord.format(utm_e))
@@ -191,6 +192,16 @@ class Point:
         """
         if self.zone_number and self.zone_letter:
             return '{:02}{}{}{}'.format(self.zone_number, self.zone_letter, self.k100_id, self.grid_coords)
+        else:
+            return None
+
+    def get_utm_coord(self):
+        """
+        Reports the properly formatted UTM coordinate for the given point.
+        :return: string, formatted UTM coordinate
+        """
+        if self.zone_number and self.zone_letter:
+            return '{:02}{} {} {}'.format(self.zone_number, self.zone_letter, int(self.utm_e), int(self.utm_n))
         else:
             return None
 
