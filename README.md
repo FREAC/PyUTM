@@ -6,14 +6,13 @@ It can also use those grid references to create spatially meaningful unique iden
 Grid references can be created in the following formats:
 - United States National Grid (USNG)
 - Military Grid Reference System (MGRS)
-- Universal Transverse Mercator (UTM) (*in progress*)
+- Universal Transverse Mercator (UTM)
 
 [Click here](https://docs.google.com/presentation/d/e/2PACX-1vS2LmQtJuGn2tv4mggu2QjJloEUQ99NRmn5kFx69lLIlsYfkhg0bJb_BEpFO8LK8rM4rqx33N_IRxWW/pub?loop=false&delayms=3000) for the slides from the [SHRUG 2018](http://shrug-gis.org/workshop/2018/) presentation on this package.
 
-### Version 0.1
+### Version 0.2.1
 
 The following features are currently in development, but not yet supported in the current version:
-- UTM coordinates
 - Locations requiring UPS grid references
 - Exceptions to grid zones in UTM
 

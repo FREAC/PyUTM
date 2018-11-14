@@ -14,7 +14,7 @@ setuptools.setup(
     version=version['__version__'],
     author="Philip Griffith",
     author_email="philip.griffith@fsu.edu",
-    description="Creates standardized grid references and unique identifiers for point data.",
+    description="Creates standardized grid references, unique identifiers and UTM coordinates for point data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/FREAC/pyutm",

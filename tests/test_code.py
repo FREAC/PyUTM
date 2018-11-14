@@ -86,7 +86,7 @@ def test_utm_coord():
     lonlat = (-79.387139, 43.642567)
     g = main.Grid(lonlat)
     refs = g.write_utms()
-    assert refs == [[-79.387139, 43.642567, '17T 630084 4833438']]
+    assert refs == [[-79.387139, 43.642567, '17T 0630084 4833438']]
 
 
 # def test_ups_ref_en():

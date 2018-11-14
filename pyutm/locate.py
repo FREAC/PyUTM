@@ -201,7 +201,7 @@ class Point:
         :return: string, formatted UTM coordinate
         """
         if self.zone_number and self.zone_letter:
-            return '{:02}{} {} {}'.format(self.zone_number, self.zone_letter, int(self.utm_e), int(self.utm_n))
+            return '{:02}{} {:07} {:07}'.format(self.zone_number, self.zone_letter, int(self.utm_e), int(self.utm_n))
         else:
             return None
 
