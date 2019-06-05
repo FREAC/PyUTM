@@ -11,7 +11,7 @@ Grid references can be created in the following formats:
 [Click here](https://docs.google.com/presentation/d/e/2PACX-1vS2LmQtJuGn2tv4mggu2QjJloEUQ99NRmn5kFx69lLIlsYfkhg0bJb_BEpFO8LK8rM4rqx33N_IRxWW/pub?loop=false&delayms=3000) for the slides from the [SHRUG 2018](http://shrug-gis.org/workshop/2018/) presentation on this package.
 
 For a comprehensive guide to asset naming using the USNG, see the [USNG Asset Naming Handbook](https://usng-gis.org/docs/USNG_Asset_naming_Handbook.pdf).
-To download the associated exercise data, [click here](/doc/hydrants.zip).
+To download the associated exercise data, [click here](/docs/hydrants.zip).
 
 ### Version 0.2.1
 
