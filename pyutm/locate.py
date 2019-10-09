@@ -40,6 +40,7 @@ class Point:
         self.grid_ref = self.get_grid_reference()
         self.utm_coord = self.get_utm_coord()
 
+
     def set_zone_number(self, longitude):
         """
         Determines the number of a point's grid zone designation using the logic in chapters 2 and 3.

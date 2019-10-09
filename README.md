@@ -233,19 +233,44 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 [[16.776031, -3.005612, 'm:XS:97389:67626:1']]
 # Create UIDs from a CSV file
 >>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
-# Add prefixes to the UIDs using values in a column of the input CSV,
-# then write the UIDs to a new CSV with a custom column name
+# Add prefixes to the UIDs using values in a column of the input CSV
+# and write the UIDs to a new CSV with a custom column name
 >>> grid_from_csv.write_refs('my_uids.csv', column='MY_UIDS', prefix_column='MY_PREFIXES')
 # Create UIDs from a shapefile
 >>> grid_from_shp = pyutm.Grid('my_points.shp')
-# Add prefixes to the UIDs using values in a column of the input shapefile
-# and decrease the precision, then write the UIDs to a new shapefile.
+# Decrease the precision and write the UIDs to a new shapefile.
 >>> grid_from_shp.write_refs('my_uids.shp', precision=1000)
 ```
 
-### 4. Call the `write_utm()` method
+### 4. Call the `write_utms()` method
 
-:hammer_and_wrench: *Coming soon* :hammer_and_wrench:
+If a file name is specified, this function writes the **UTM** coordinate of each point to the file.
+If the input data is in the CSV or shapefile format, the UTM coordinates are added as a new column to the file.
+
+This function always returns a list in the form `[[X, Y, 'UTM Coordinate'], ...]`.
+
+`write_utms(fname=None, column='UTM_COORD')`
+
+- `fname` *(optional)*: the name of the file to which the UTM coordinates are written
+  - The output file must be in the same format as the input data
+- `column`: the header of the column to which the UTM coordinates are written
+  - The default column name is **UTM_COORD**
+  
+```python
+>>> lonlat = (-79.387139, 43.642567)
+>>> my_grid = pyutm.Grid(lonlat)
+# Create UTM coordinates
+>>> my_utm = my_grid.write_utms()
+>>> my_utm
+[[-79.387139, 43.642567, '17T 0630084 4833438']]
+# Create UTM coordinates from a CSV file
+>>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
+# Write the UTM coordinates to a new CSV with a custom column name
+>>> grid_from_csv.write_utms('my_utms.csv', column='MY_UTMS')
+# Create UTM coordinates from a shapefile
+>>> grid_from_shp = pyutm.Grid('my_points.shp')
+>>> grid_from_shp.write_refs('my_utms.shp')
+```
 
 ## References
 

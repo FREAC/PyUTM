@@ -95,16 +95,16 @@ def test_utm_coord():
 #     g = main.Grid(lonlat)
 #     refs = g.write_refs()
 #     assert refs == [[40.0, 84.1, 'ZGB21409778']]
-#
-#
+
+
 # def test_ups_ref_es():
 #
 #     lonlat = (40.0, -80.1)
 #     g = main.Grid(lonlat)
 #     refs = g.write_refs()
 #     assert refs == [[40.0, -80.1, 'BKW08204400']]
-#
-#
+
+
 # def test_ups_ref_wn():
 #
 #     lonlat = (-40.0, 84.1)
