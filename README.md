@@ -275,12 +275,12 @@ This function always returns a list in the form `[[X, Y, 'UTM Coordinate'], ...]
 ## References
 
 National Geospatial-Intelligence Agency, *The Universal Grids and the Transverse Mercator and Polar Stereographic Map Projections*,
-[NGA Standardization Document NGA.SIG.0012_2.0.0_UTMUPS](http://earth-info.nga.mil/GandG/publications/NGA_SIG_0012_2_0_0_UTMUPS/NGA.SIG.0012_2.0.0_UTMUPS.pdf).
+[NGA Standardization Document NGA.SIG.0012_2.0.0_UTMUPS](https://earth-info.nga.mil/php/download.php?file=coord-utmups).
 Washington, D.C.: Office of Geomatics, 2014.
 - PyUTM will eventually implement the logic found in Sections 11, 12 and 14 of this document.
 
 National Geospatial-Intelligence Agency, *Universal Grids and Grid Reference Systems*,
-[NGA Standardization Document NGA.STND.0037_2.0.0_GRIDS](http://earth-info.nga.mil/GandG/publications/NGA_STND_0037_2_0_0_GRIDS/NGA.STND.0037_2.0.0_GRIDS.pdf).
+[NGA Standardization Document NGA.STND.0037_2.0.0_GRIDS](https://earth-info.nga.mil/php/download.php?file=coord-grids).
 Washington, D.C.: Office of Geomatics, 2014.
 - Though broader in scope than the previous document, Chapter 3 and Appendices A and B are particularly helpful.
 - PyUTM currently implements a version of the logic found in Appendix B of this document.
