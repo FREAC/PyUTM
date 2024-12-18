@@ -232,10 +232,10 @@ This function always returns a list in the form `[[X, Y, 'UID'], ...]`.
 >>> my_prefix
 [[16.776031, -3.005612, 'm:XS:97389:67626:1']]
 # Create UIDs from a CSV file
->>> grid_from_csv = pyutm.Grid('my_points.csv', column=['LON', 'LAT'])
+>>> grid_from_csv = pyutm.Grid('my_points.csv', columns=['LON', 'LAT'])
 # Add prefixes to the UIDs using values in a column of the input CSV
 # and write the UIDs to a new CSV with a custom column name
->>> grid_from_csv.write_refs('my_uids.csv', column='MY_UIDS', prefix_column='MY_PREFIXES')
+>>> grid_from_csv.write_uids('my_uids.csv', column='MY_UIDS', prefix_column='MY_PREFIXES')
 # Create UIDs from a shapefile
 >>> grid_from_shp = pyutm.Grid('my_points.shp')
 # Decrease the precision and write the UIDs to a new shapefile.
